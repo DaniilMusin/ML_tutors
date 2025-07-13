@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Платформа подбора репетиторов{% endblock %}</title>
+    <title>{% block title %}Tutors Platform{% endblock %}</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,86 +11,251 @@
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <!-- PWA Meta -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Tutors Platform">
+    <link rel="apple-touch-icon" href="/static/images/icon-192x192.png">
     
-    {% block extra_head %}{% endblock %}
+    <!-- Custom styles -->
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Loading state */
+        .htmx-request {
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans antialiased">
+<body class="bg-gray-50 font-sans">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
+    <nav class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="/" class="text-xl font-bold text-indigo-600">
-                        Репетиторы
+                    <a href="/" class="text-xl font-bold text-blue-600">
+                        🎓 Tutors Platform
                     </a>
                 </div>
                 
                 <div class="flex items-center space-x-4">
                     {% if user.is_authenticated %}
-                        <span class="text-gray-700">Привет, {{ user.username }}!</span>
-                        <a href="/profile/" class="text-indigo-600 hover:text-indigo-900">
-                            Профиль
-                        </a>
-                        <form method="post" action="/logout/" class="inline">
-                            {% csrf_token %}
-                            <button type="submit" class="text-gray-500 hover:text-gray-700">
-                                Выйти
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center text-sm bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <span class="sr-only">Open user menu</span>
+                                <div class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+                                    {{ user.first_name.0|default:user.username.0|upper }}
+                                </div>
+                                <span class="ml-2 text-gray-700">{{ user.get_full_name|default:user.username }}</span>
                             </button>
-                        </form>
+                            
+                            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                <div class="py-1">
+                                    <a href="/profile/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Профиль</a>
+                                    <a href="/orders/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Мои заказы</a>
+                                    {% if user.tutor_profile %}
+                                        <a href="/tutor/dashboard/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Кабинет репетитора</a>
+                                    {% endif %}
+                                    <hr class="my-1">
+                                    <a href="/logout/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Выйти</a>
+                                </div>
+                            </div>
+                        </div>
                     {% else %}
-                        <a href="/login/" class="text-indigo-600 hover:text-indigo-900">
-                            Войти
-                        </a>
-                        <a href="/register/" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
-                            Регистрация
-                        </a>
+                        <a href="/login/" class="text-gray-700 hover:text-blue-600">Войти</a>
+                        <a href="/register/" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Регистрация</a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} p-4 mb-4 rounded-md 
-                        {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% endif %}
-                        {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% endif %}
-                        {% if message.tags == 'info' %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}
-                        {% if message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        {% block content %}{% endblock %}
+    <!-- Main content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {% block content %}
+        {% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-16">
-        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <div class="text-center text-gray-500">
-                <p>&copy; 2024 Платформа подбора репетиторов. Все права защищены.</p>
-            </div>
-        </div>
-    </footer>
+    <!-- Notifications -->
+    <div id="notifications" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
+    <!-- Modals container -->
+    <div id="modals"></div>
+
+    <!-- WebSocket connection for real-time updates -->
+    {% if user.is_authenticated %}
+    <script>
+        // WebSocket connection for notifications
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${window.location.host}/ws/tutor/notifications/`;
+        
+        try {
+            const socket = new WebSocket(wsUrl);
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                showNotification(data.message, data.type || 'info');
+            };
+            
+            socket.onclose = function(event) {
+                console.log('WebSocket closed:', event);
+            };
+            
+            socket.onerror = function(error) {
+                console.log('WebSocket error:', error);
+            };
+        } catch (error) {
+            console.log('WebSocket connection failed:', error);
+        }
+    </script>
+    {% endif %}
+
+    <!-- Utility functions -->
+    <script>
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const colors = {
+                info: 'bg-blue-500',
+                success: 'bg-green-500',
+                warning: 'bg-yellow-500',
+                error: 'bg-red-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `${colors[type]} text-white px-4 py-3 rounded-md shadow-lg fade-in`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        ✕
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('notifications').appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+        
+        // HTMX event handlers
+        document.addEventListener('htmx:responseError', function(event) {
+            showNotification('Произошла ошибка. Попробуйте еще раз.', 'error');
+        });
+        
+        document.addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.successful) {
+                // Handle successful requests
+                const trigger = event.detail.elt;
+                if (trigger.dataset.successMessage) {
+                    showNotification(trigger.dataset.successMessage, 'success');
+                }
+            }
+        });
+    </script>
+    
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js');
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New version available
+                                    showNotification('Доступно обновление! Перезагрузите страницу.', 'info');
+                                    
+                                    // Add update button
+                                    const updateBtn = document.createElement('button');
+                                    updateBtn.className = 'fixed bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+                                    updateBtn.textContent = 'Обновить';
+                                    updateBtn.onclick = () => window.location.reload();
+                                    document.body.appendChild(updateBtn);
+                                }
+                            });
+                        });
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
         }
+        
+        // PWA install prompt
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button
+            const installBtn = document.createElement('button');
+            installBtn.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+            installBtn.innerHTML = '📱 Установить приложение';
+            installBtn.onclick = async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log(`User response to the install prompt: ${outcome}`);
+                    deferredPrompt = null;
+                    installBtn.remove();
+                }
+            };
+            document.body.appendChild(installBtn);
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                if (installBtn.parentElement) {
+                    installBtn.remove();
+                }
+            }, 10000);
+        });
+        
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            showNotification('Приложение установлено!', 'success');
+        });
     </script>
 
-    {% block extra_js %}{% endblock %}
+    {% block scripts %}
+    {% endblock %}
 </body>
 </html>

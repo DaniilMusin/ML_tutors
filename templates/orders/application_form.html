@@ -1,0 +1,231 @@
+<!-- Application Form Modal/Component -->
+<div class="bg-white rounded-lg shadow-md p-6" id="application-form">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Откликнуться на заказ</h3>
+    
+    <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+        <h4 class="font-medium text-gray-900">{{ order.title }}</h4>
+        <p class="text-sm text-gray-600 mt-1">{{ order.description|truncatewords:20 }}</p>
+        <div class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+            <span>💰 {{ order.budget_min }}-{{ order.budget_max }} руб/час</span>
+            <span>📍 {{ order.city|default:"Онлайн" }}</span>
+        </div>
+    </div>
+
+    <form 
+        hx-post="/api/orders/applications/"
+        hx-trigger="submit"
+        hx-target="#application-form"
+        hx-swap="outerHTML"
+        hx-indicator="#app-loading"
+        data-success-message="Отклик успешно отправлен!"
+        class="space-y-4"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="order" value="{{ order.id }}">
+        
+        <!-- Price Proposal -->
+        <div>
+            <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+                Ваша цена (руб/час) *
+            </label>
+            <div class="relative">
+                <input 
+                    type="number" 
+                    name="price" 
+                    id="price" 
+                    required
+                    min="{{ order.budget_min }}"
+                    max="{{ order.budget_max }}"
+                    step="50"
+                    value="{{ order.budget_min }}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span class="text-gray-500 text-sm">₽/час</span>
+                </div>
+            </div>
+            <p class="mt-1 text-xs text-gray-500">
+                Диапазон бюджета студента: {{ order.budget_min }}-{{ order.budget_max }} руб/час
+            </p>
+        </div>
+
+        <!-- Cover Message -->
+        <div>
+            <label for="message" class="block text-sm font-medium text-gray-700 mb-2">
+                Сопроводительное сообщение *
+            </label>
+            <textarea 
+                name="message" 
+                id="message" 
+                rows="5" 
+                required
+                maxlength="1000"
+                placeholder="Расскажите о своем опыте, подходе к обучению, почему вы подходите для этого заказа..."
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            ></textarea>
+            <div class="mt-1 flex justify-between text-xs text-gray-500">
+                <span>Убедите студента, что именно вы подходите для его задачи</span>
+                <span id="char-count">0/1000</span>
+            </div>
+        </div>
+
+        <!-- Quick Experience Highlights -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Быстрые факты о вас
+            </label>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="bg-blue-50 p-3 rounded-lg">
+                    <div class="font-medium text-blue-900">Опыт преподавания</div>
+                    <div class="text-blue-700">{{ tutor.experience_years }} лет</div>
+                </div>
+                <div class="bg-green-50 p-3 rounded-lg">
+                    <div class="font-medium text-green-900">Рейтинг</div>
+                    <div class="text-green-700">⭐ {{ tutor.rating }}/5 ({{ tutor.rating_count }} отзывов)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Когда можете начать?
+            </label>
+            <select 
+                name="availability" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+                <option value="immediately">Сразу</option>
+                <option value="this_week">На этой неделе</option>
+                <option value="next_week">На следующей неделе</option>
+                <option value="in_2_weeks">Через 2 недели</option>
+            </select>
+        </div>
+
+        <!-- Format Preferences -->
+        {% if order.format_online and order.format_offline %}
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Предпочтительный формат
+            </label>
+            <div class="space-y-2">
+                <label class="flex items-center">
+                    <input 
+                        type="radio" 
+                        name="preferred_format" 
+                        value="online"
+                        checked
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span class="ml-2 text-sm text-gray-900">Онлайн (рекомендую)</span>
+                </label>
+                <label class="flex items-center">
+                    <input 
+                        type="radio" 
+                        name="preferred_format" 
+                        value="offline"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span class="ml-2 text-sm text-gray-900">Очно</span>
+                </label>
+                <label class="flex items-center">
+                    <input 
+                        type="radio" 
+                        name="preferred_format" 
+                        value="both"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span class="ml-2 text-sm text-gray-900">Без предпочтений</span>
+                </label>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+            <button 
+                type="button"
+                onclick="closeApplicationForm()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+                Отмена
+            </button>
+            
+            <div class="flex items-center space-x-4">
+                <div id="app-loading" class="htmx-indicator">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Отправка отклика...
+                    </div>
+                </div>
+                
+                <button 
+                    type="submit"
+                    class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Отправить отклик
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Character counter
+    document.getElementById('message').addEventListener('input', function() {
+        const count = this.value.length;
+        document.getElementById('char-count').textContent = `${count}/1000`;
+        
+        if (count > 950) {
+            document.getElementById('char-count').className = 'text-red-500';
+        } else {
+            document.getElementById('char-count').className = 'text-gray-500';
+        }
+    });
+
+    // Price validation
+    document.getElementById('price').addEventListener('input', function() {
+        const price = parseFloat(this.value);
+        const minBudget = {{ order.budget_min }};
+        const maxBudget = {{ order.budget_max }};
+        
+        if (price < minBudget || price > maxBudget) {
+            this.setCustomValidity(`Цена должна быть в диапазоне ${minBudget}-${maxBudget} руб/час`);
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Close form function
+    function closeApplicationForm() {
+        const modal = document.getElementById('application-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        } else {
+            // If not in modal, redirect back
+            history.back();
+        }
+    }
+
+    // Handle successful application
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful && 
+            event.detail.xhr.status === 201 && 
+            event.detail.elt.closest('#application-form')) {
+            
+            // Show success message and close form
+            setTimeout(() => {
+                closeApplicationForm();
+                
+                // Refresh applications list if exists
+                const appsList = document.getElementById('applications-list');
+                if (appsList) {
+                    htmx.trigger(appsList, 'refresh');
+                }
+            }, 1000);
+        }
+    });
+</script>

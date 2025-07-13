@@ -17,7 +17,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tutors_platform.settings')
 
 django_asgi_app = get_asgi_application()
 
-from apps.orders.routing import websocket_urlpatterns
+from tutors_platform.routing import websocket_urlpatterns
 
 application = ProtocolTypeRouter({
     'http': django_asgi_app,
