@@ -1,0 +1,102 @@
+[
+  {
+    "model": "tutors.subject",
+    "pk": 1,
+    "fields": {
+      "name": "Математика",
+      "description": "Школьная и высшая математика",
+      "category": "Точные науки",
+      "icon": "calculate"
+    }
+  },
+  {
+    "model": "tutors.subject",
+    "pk": 2,
+    "fields": {
+      "name": "Физика",
+      "description": "Школьная и вузовская физика",
+      "category": "Точные науки",
+      "icon": "science"
+    }
+  },
+  {
+    "model": "tutors.subject",
+    "pk": 3,
+    "fields": {
+      "name": "Английский язык",
+      "description": "Изучение английского языка",
+      "category": "Иностранные языки",
+      "icon": "language"
+    }
+  },
+  {
+    "model": "tutors.subject",
+    "pk": 4,
+    "fields": {
+      "name": "Русский язык",
+      "description": "Русский язык и литература",
+      "category": "Гуманитарные науки",
+      "icon": "book"
+    }
+  },
+  {
+    "model": "tutors.subject",
+    "pk": 5,
+    "fields": {
+      "name": "Информатика",
+      "description": "Программирование и информатика",
+      "category": "Точные науки",
+      "icon": "computer"
+    }
+  },
+  {
+    "model": "tutors.subject",
+    "pk": 6,
+    "fields": {
+      "name": "Химия",
+      "description": "Общая и органическая химия",
+      "category": "Точные науки",
+      "icon": "chemistry"
+    }
+  },
+  {
+    "model": "tutors.subject",
+    "pk": 7,
+    "fields": {
+      "name": "Биология",
+      "description": "Биология и анатомия",
+      "category": "Естественные науки",
+      "icon": "biology"
+    }
+  },
+  {
+    "model": "tutors.subject",
+    "pk": 8,
+    "fields": {
+      "name": "История",
+      "description": "Всемирная и отечественная история",
+      "category": "Гуманитарные науки",
+      "icon": "history"
+    }
+  },
+  {
+    "model": "tutors.subject",
+    "pk": 9,
+    "fields": {
+      "name": "География",
+      "description": "Физическая и экономическая география",
+      "category": "Гуманитарные науки",
+      "icon": "map"
+    }
+  },
+  {
+    "model": "tutors.subject",
+    "pk": 10,
+    "fields": {
+      "name": "Обществознание",
+      "description": "Социальные науки",
+      "category": "Гуманитарные науки",
+      "icon": "people"
+    }
+  }
+]
