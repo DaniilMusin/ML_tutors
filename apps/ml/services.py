@@ -8,10 +8,69 @@ from typing import List, Dict, Optional
 import lightgbm as lgb
 import pickle
 import os
+import time
+import random
+import logging
 from datetime import datetime
 
 from apps.tutors.models import TutorProfile
 from apps.orders.models import Order, EmbeddingCache
+
+logger = logging.getLogger(__name__)
+
+
+def retry_openai_call(max_retries=3, base_delay=0.1, max_delay=0.7):
+    """
+    Decorator for OpenAI API calls with exponential backoff.
+    
+    Args:
+        max_retries: Maximum number of retry attempts
+        base_delay: Initial delay between retries in seconds
+        max_delay: Maximum delay between retries in seconds (must be ≤ 0.7s)
+    """
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            
+            for attempt in range(max_retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except openai.RateLimitError as e:
+                    last_exception = e
+                    if attempt == max_retries:
+                        logger.error(f"OpenAI rate limit exceeded after {max_retries} retries: {e}")
+                        break
+                    
+                    # Calculate delay with exponential backoff + jitter
+                    delay = min(base_delay * (2 ** attempt) + random.uniform(0, 0.1), max_delay)
+                    logger.warning(f"OpenAI rate limit hit, retrying in {delay:.2f}s (attempt {attempt + 1}/{max_retries})")
+                    time.sleep(delay)
+                    
+                except (openai.APITimeoutError, openai.APIConnectionError) as e:
+                    last_exception = e
+                    if attempt == max_retries:
+                        logger.error(f"OpenAI timeout/connection error after {max_retries} retries: {e}")
+                        break
+                    
+                    delay = min(base_delay * (2 ** attempt), max_delay)
+                    logger.warning(f"OpenAI timeout/connection error, retrying in {delay:.2f}s")
+                    time.sleep(delay)
+                    
+                except openai.AuthenticationError as e:
+                    logger.error(f"OpenAI authentication error: {e}")
+                    raise e  # Don't retry auth errors
+                    
+                except Exception as e:
+                    last_exception = e
+                    logger.error(f"Unexpected error in OpenAI call: {e}")
+                    break
+            
+            # If all retries failed, return None for graceful degradation
+            logger.error(f"All OpenAI retry attempts failed, returning None. Last error: {last_exception}")
+            return None
+            
+        return wrapper
+    return decorator
 
 
 class AIMatchingService:
@@ -197,11 +256,19 @@ class AIMatchingService:
         if cache_entry:
             return cache_entry.vector
         
+        # Get embedding with retry logic
+        embedding = self._get_embedding_with_retry(text, text_hash)
+        return embedding
+    
+    @retry_openai_call(max_retries=3, base_delay=0.1, max_delay=0.7)
+    def _get_embedding_with_retry(self, text: str, text_hash: str) -> Optional[List[float]]:
+        """Get embedding from OpenAI with retry logic and timeout."""
         try:
-            # Get embedding from OpenAI
+            # Get embedding from OpenAI with timeout ≤ 700ms
             response = self.openai_client.embeddings.create(
                 model="text-embedding-3-small",
-                input=text
+                input=text,
+                timeout=0.7  # 700ms timeout
             )
             
             embedding = response.data[0].embedding
@@ -216,8 +283,26 @@ class AIMatchingService:
             return embedding
             
         except Exception as e:
-            print(f"Error getting embedding: {e}")
-            return None
+            logger.error(f"Error getting embedding: {e}")
+            raise e  # Let the decorator handle retries
+    
+    @retry_openai_call(max_retries=3, base_delay=0.1, max_delay=0.7)
+    def _llm_chat_with_retry(self, system_prompt: str, user_prompt: str):
+        """Make LLM chat completion with retry logic and timeout."""
+        try:
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,
+                timeout=0.7  # 700ms timeout
+            )
+            return response
+        except Exception as e:
+            logger.error(f"Error in LLM chat completion: {e}")
+            raise e  # Let the decorator handle retries
     
     def _rank_with_lightgbm(self, features: np.ndarray) -> List[float]:
         """Rank candidates using LightGBM."""
@@ -311,15 +396,12 @@ class AIMatchingService:
             Example: [{"id": 1, "reason": "Perfect subject match and budget"}, {"id": 3, "reason": "High rating and experience"}]
             """
             
-            response = self.openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                timeout=1.0
-            )
+            # Use retry wrapper for LLM call
+            response = self._llm_chat_with_retry(system_prompt, prompt)
+            
+            if not response:
+                logger.warning("LLM reranking failed, falling back to original order")
+                return None
             
             # Parse response
             result = json.loads(response.choices[0].message.content)

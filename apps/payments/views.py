@@ -12,9 +12,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.db import transaction
 
 from apps.tutors.models import TutorProfile
 from apps.orders.models import Booking
+from .models import StripeWebhookEvent, Payment
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 logger = logging.getLogger(__name__)
@@ -156,7 +158,7 @@ class CreateCheckoutSessionView(APIView):
 @require_POST
 def stripe_webhook(request):
     """
-    Handle Stripe webhooks for payment processing.
+    Handle Stripe webhooks for payment processing with idempotency.
     """
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
@@ -173,19 +175,35 @@ def stripe_webhook(request):
         logger.error("Invalid signature in Stripe webhook")
         return HttpResponseBadRequest("Invalid signature")
     
+    event_id = event['id']
+    event_type = event['type']
+    
+    # Check for idempotency - if we've already processed this event, return success
+    with transaction.atomic():
+        webhook_event, created = StripeWebhookEvent.objects.get_or_create(
+            stripe_event_id=event_id,
+            defaults={'event_type': event_type}
+        )
+        
+        if not created:
+            logger.info(f"Webhook event {event_id} already processed, skipping")
+            return HttpResponse(status=200)
+    
     # Handle the event
     try:
-        if event['type'] == 'checkout.session.completed':
+        if event_type == 'checkout.session.completed':
             _handle_checkout_completed(event['data']['object'])
-        elif event['type'] == 'invoice.payment_succeeded':
+        elif event_type == 'invoice.payment_succeeded':
             _handle_subscription_payment(event['data']['object'])
-        elif event['type'] == 'customer.subscription.deleted':
+        elif event_type == 'customer.subscription.deleted':
             _handle_subscription_cancelled(event['data']['object'])
         else:
-            logger.info(f"Unhandled Stripe event type: {event['type']}")
+            logger.info(f"Unhandled Stripe event type: {event_type}")
             
     except Exception as e:
-        logger.error(f"Error handling Stripe webhook: {str(e)}")
+        logger.error(f"Error handling Stripe webhook {event_id}: {str(e)}")
+        # Delete the webhook event record so it can be retried
+        StripeWebhookEvent.objects.filter(stripe_event_id=event_id).delete()
         return HttpResponseBadRequest("Webhook handling failed")
     
     return HttpResponse(status=200)
@@ -208,12 +226,17 @@ def _activate_premium_subscription(session, metadata):
         tutor_profile_id = metadata.get('tutor_profile_id')
         tutor_profile = TutorProfile.objects.get(id=tutor_profile_id)
         
+        # Save Stripe customer ID for future subscription management
+        customer_id = session.get('customer')
+        if customer_id:
+            tutor_profile.stripe_customer_id = customer_id
+        
         # Activate premium for 1 month
         tutor_profile.is_premium = True
         tutor_profile.premium_expires_at = timezone.now() + timedelta(days=30)
         tutor_profile.save()
         
-        logger.info(f"Premium activated for tutor {tutor_profile.id}")
+        logger.info(f"Premium activated for tutor {tutor_profile.id} with customer_id {customer_id}")
         
     except TutorProfile.DoesNotExist:
         logger.error(f"TutorProfile not found: {metadata.get('tutor_profile_id')}")
@@ -240,9 +263,22 @@ def _handle_subscription_payment(invoice):
     """Handle successful subscription payment (renewal)."""
     try:
         customer_id = invoice.get('customer')
+        
         # Find tutor by Stripe customer ID and extend premium
-        # This would need additional customer_id field in TutorProfile
-        logger.info(f"Subscription payment succeeded for customer {customer_id}")
+        tutor_profile = TutorProfile.objects.filter(stripe_customer_id=customer_id).first()
+        if tutor_profile:
+            # Extend premium subscription by 30 days from current expiry or now
+            current_expiry = tutor_profile.premium_expires_at or timezone.now()
+            if current_expiry < timezone.now():
+                current_expiry = timezone.now()
+            
+            tutor_profile.premium_expires_at = current_expiry + timedelta(days=30)
+            tutor_profile.is_premium = True
+            tutor_profile.save()
+            
+            logger.info(f"Premium subscription extended for tutor {tutor_profile.user.username} until {tutor_profile.premium_expires_at}")
+        else:
+            logger.error(f"No tutor found with customer_id {customer_id}")
         
     except Exception as e:
         logger.error(f"Error handling subscription payment: {str(e)}")
@@ -252,9 +288,17 @@ def _handle_subscription_cancelled(subscription):
     """Handle cancelled subscription."""
     try:
         customer_id = subscription.get('customer')
+        
         # Find tutor by Stripe customer ID and deactivate premium
-        # This would need additional customer_id field in TutorProfile
-        logger.info(f"Subscription cancelled for customer {customer_id}")
+        tutor_profile = TutorProfile.objects.filter(stripe_customer_id=customer_id).first()
+        if tutor_profile:
+            tutor_profile.is_premium = False
+            # Keep the expiry date for records but mark as not premium
+            tutor_profile.save()
+            
+            logger.info(f"Premium subscription cancelled for tutor {tutor_profile.user.username}")
+        else:
+            logger.error(f"No tutor found with customer_id {customer_id}")
         
     except Exception as e:
         logger.error(f"Error handling subscription cancellation: {str(e)}")
