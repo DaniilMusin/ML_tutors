@@ -20,6 +20,8 @@ class TutorProfile(models.Model):
     # Premium subscription
     is_premium = models.BooleanField(default=False)
     premium_expires_at = models.DateTimeField(null=True, blank=True)
+    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True, 
+                                         help_text="Stripe customer ID for subscription management")
     
     # Vector embedding for AI matching
     vector = VectorField(dimensions=768, blank=True, null=True)

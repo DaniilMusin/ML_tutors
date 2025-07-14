@@ -1,0 +1,257 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "username": "student1",
+      "email": "student1@example.com",
+      "first_name": "Анна",
+      "last_name": "Петрова",
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.user", 
+    "pk": 2,
+    "fields": {
+      "username": "tutor_math1",
+      "email": "math.tutor1@example.com",
+      "first_name": "Дмитрий",
+      "last_name": "Иванов",
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "username": "tutor_physics1",
+      "email": "physics.tutor1@example.com", 
+      "first_name": "Елена",
+      "last_name": "Смирнова",
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+      "username": "tutor_english1",
+      "email": "english.tutor1@example.com",
+      "first_name": "Michael",
+      "last_name": "Johnson",
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 5,
+    "fields": {
+      "username": "tutor_chemistry1",
+      "email": "chemistry.tutor1@example.com",
+      "first_name": "Ольга",
+      "last_name": "Козлова",
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "subjects",
+    "pk": 1,
+    "fields": {
+      "name": "Математика",
+      "category": "Точные науки",
+      "description": "Алгебра, геометрия, тригонометрия, математический анализ",
+      "icon": "calculator",
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "subjects",
+    "pk": 2,
+    "fields": {
+      "name": "Физика",
+      "category": "Точные науки", 
+      "description": "Механика, термодинамика, электричество, оптика",
+      "icon": "atom",
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "subjects",
+    "pk": 3,
+    "fields": {
+      "name": "Английский язык",
+      "category": "Иностранные языки",
+      "description": "Грамматика, разговорная практика, подготовка к экзаменам",
+      "icon": "language",
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "subjects",
+    "pk": 4,
+    "fields": {
+      "name": "Химия",
+      "category": "Точные науки",
+      "description": "Органическая и неорганическая химия, биохимия",
+      "icon": "flask",
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "tutor_profiles",
+    "pk": 1,
+    "fields": {
+      "user": 2,
+      "bio": "Преподаватель математики с 8-летним опытом. Специализируюсь на подготовке к ЕГЭ и поступлению в вузы. Объясняю сложные темы простым языком.",
+      "experience_years": 8,
+      "hourly_rate": "2500.00",
+      "rating": "4.9",
+      "rating_count": 45,
+      "is_premium": true,
+      "premium_expires_at": "2024-12-31T23:59:59Z",
+      "is_verified": true,
+      "city": "Москва",
+      "region": "Московская область",
+      "availability": {
+        "monday": ["09:00-12:00", "18:00-21:00"],
+        "tuesday": ["09:00-12:00", "18:00-21:00"],
+        "wednesday": ["09:00-12:00", "18:00-21:00"],
+        "thursday": ["09:00-12:00", "18:00-21:00"],
+        "friday": ["09:00-12:00", "18:00-21:00"],
+        "saturday": ["10:00-16:00"],
+        "sunday": ["10:00-16:00"]
+      },
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "tutor_profiles",
+    "pk": 2,
+    "fields": {
+      "user": 3,
+      "bio": "Кандидат физико-математических наук. Преподаю физику школьникам и студентам. Помогаю понять физические явления через эксперименты.",
+      "experience_years": 12,
+      "hourly_rate": "3000.00",
+      "rating": "4.8",
+      "rating_count": 38,
+      "is_premium": true,
+      "premium_expires_at": "2024-11-30T23:59:59Z",
+      "is_verified": true,
+      "city": "Санкт-Петербург",
+      "region": "Ленинградская область",
+      "availability": {
+        "monday": ["14:00-20:00"],
+        "tuesday": ["14:00-20:00"],
+        "wednesday": ["14:00-20:00"],
+        "thursday": ["14:00-20:00"],
+        "friday": ["14:00-20:00"],
+        "saturday": ["09:00-18:00"],
+        "sunday": ["09:00-18:00"]
+      },
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "tutor_profiles",
+    "pk": 3,
+    "fields": {
+      "user": 4,
+      "bio": "Native English speaker with TESOL certification. 6 years of teaching experience. Specializing in conversation practice and exam preparation.",
+      "experience_years": 6,
+      "hourly_rate": "2800.00",
+      "rating": "4.7",
+      "rating_count": 29,
+      "is_premium": false,
+      "is_verified": true,
+      "city": "Москва",
+      "region": "Московская область",
+      "availability": {
+        "monday": ["16:00-22:00"],
+        "tuesday": ["16:00-22:00"],
+        "wednesday": ["16:00-22:00"],
+        "thursday": ["16:00-22:00"],
+        "friday": ["16:00-22:00"],
+        "saturday": ["10:00-20:00"],
+        "sunday": ["10:00-20:00"]
+      },
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "tutor_profiles",
+    "pk": 4,
+    "fields": {
+      "user": 5,
+      "bio": "Доктор химических наук, профессор. 15 лет преподавательского стажа. Готовлю к олимпиадам и поступлению в медицинские вузы.",
+      "experience_years": 15,
+      "hourly_rate": "3500.00",
+      "rating": "5.0",
+      "rating_count": 52,
+      "is_premium": true,
+      "premium_expires_at": "2025-06-30T23:59:59Z",
+      "is_verified": true,
+      "city": "Новосибирск",
+      "region": "Новосибирская область",
+      "availability": {
+        "monday": ["17:00-21:00"],
+        "tuesday": ["17:00-21:00"],
+        "wednesday": ["17:00-21:00"],
+        "thursday": ["17:00-21:00"],
+        "friday": ["17:00-21:00"],
+        "saturday": ["09:00-15:00"],
+        "sunday": ["09:00-15:00"]
+      },
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "orders.order",
+    "pk": 1,
+    "fields": {
+      "student": 1,
+      "subject": 1,
+      "title": "Подготовка к ЕГЭ по математике",
+      "description": "Нужна помощь в подготовке к ЕГЭ по математике (профильный уровень). Особенно сложно даются задачи с параметрами и стереометрия.",
+      "goal_text": "Сдать ЕГЭ на 85+ баллов",
+      "budget_min": 2000,
+      "budget_max": 3000,
+      "format_online": true,
+      "format_offline": false,
+      "city": "Москва",
+      "region": "Московская область",
+      "status": "active",
+      "created_at": "2024-01-15T10:00:00Z",
+      "updated_at": "2024-01-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "orders.order",
+    "pk": 2,
+    "fields": {
+      "student": 1,
+      "subject": 3,
+      "title": "Разговорный английский",
+      "description": "Хочу улучшить разговорные навыки английского языка. Уровень примерно intermediate. Готовлюсь к собеседованию в международную компанию.",
+      "goal_text": "Свободно говорить на английском",
+      "budget_min": 2500,
+      "budget_max": 3500,
+      "format_online": true,
+      "format_offline": false,
+      "city": "Москва",
+      "region": "Московская область",
+      "status": "active",
+      "created_at": "2024-01-20T14:30:00Z",
+      "updated_at": "2024-01-20T14:30:00Z"
+    }
+  }
+]
