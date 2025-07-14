@@ -1,0 +1,368 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать заказ - Tutors Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Создать заказ на репетитора</h1>
+        
+        <form 
+            hx-post="/api/orders/"
+            hx-trigger="submit"
+            hx-target="#order-form-container"
+            hx-swap="outerHTML"
+            hx-indicator="#loading"
+            data-success-message="Заказ успешно создан!"
+            class="space-y-6"
+        >
+            {% csrf_token %}
+            
+            <div id="order-form-container">
+                <!-- Subject Selection -->
+                <div>
+                    <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
+                        Предмет *
+                    </label>
+                    <select 
+                        name="subject" 
+                        id="subject" 
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        hx-get="/api/subjects/search/"
+                        hx-trigger="change"
+                        hx-target="#subject-description"
+                    >
+                        <option value="">Выберите предмет</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.id }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div id="subject-description" class="mt-2 text-sm text-gray-500"></div>
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                        Заголовок заказа *
+                    </label>
+                    <input 
+                        type="text" 
+                        name="title" 
+                        id="title" 
+                        required
+                        maxlength="200"
+                        placeholder="Например: Нужна помощь с изучением производных"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                        Описание задачи *
+                    </label>
+                    <textarea 
+                        name="description" 
+                        id="description" 
+                        rows="4" 
+                        required
+                        placeholder="Подробно опишите, с чем нужна помощь, ваш уровень подготовки, цели обучения..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    ></textarea>
+                    <p class="mt-1 text-sm text-gray-500">Чем подробнее описание, тем лучше репетиторы смогут оценить задачу</p>
+                </div>
+
+                <!-- Budget -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="budget_min" class="block text-sm font-medium text-gray-700 mb-2">
+                            Бюджет от (руб/час) *
+                        </label>
+                        <input 
+                            type="number" 
+                            name="budget_min" 
+                            id="budget_min" 
+                            required
+                            min="0"
+                            step="50"
+                            placeholder="1000"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label for="budget_max" class="block text-sm font-medium text-gray-700 mb-2">
+                            Бюджет до (руб/час) *
+                        </label>
+                        <input 
+                            type="number" 
+                            name="budget_max" 
+                            id="budget_max" 
+                            required
+                            min="0"
+                            step="50"
+                            placeholder="2000"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                </div>
+
+                <!-- Format -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Формат занятий *
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                name="format_online" 
+                                value="true"
+                                checked
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <span class="ml-2 text-sm text-gray-900">Онлайн</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                name="format_offline" 
+                                value="true"
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                hx-trigger="change"
+                                hx-target="#location-fields"
+                                hx-swap="innerHTML"
+                                hx-get="/fragments/location_fields/"
+                            />
+                            <span class="ml-2 text-sm text-gray-900">Очно</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Location (conditionally shown) -->
+                <div id="location-fields"></div>
+
+                <!-- Schedule -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Желаемое расписание
+                    </label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <select 
+                                name="schedule_days" 
+                                multiple
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="monday">Понедельник</option>
+                                <option value="tuesday">Вторник</option>
+                                <option value="wednesday">Среда</option>
+                                <option value="thursday">Четверг</option>
+                                <option value="friday">Пятница</option>
+                                <option value="saturday">Суббота</option>
+                                <option value="sunday">Воскресенье</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select 
+                                name="schedule_time"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="">Время</option>
+                                <option value="morning">Утром (9:00-12:00)</option>
+                                <option value="afternoon">Днем (12:00-17:00)</option>
+                                <option value="evening">Вечером (17:00-21:00)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Matching Option -->
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            id="use_ai_matching" 
+                            name="use_ai_matching"
+                            value="true"
+                            checked
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label for="use_ai_matching" class="ml-2 text-sm font-medium text-gray-900">
+                            🤖 Использовать ИИ-подбор репетиторов
+                        </label>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-600">
+                        ИИ автоматически найдет наиболее подходящих репетиторов на основе вашего запроса
+                    </p>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex items-center justify-between pt-6">
+                <button 
+                    type="button"
+                    onclick="history.back()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                    Отмена
+                </button>
+                
+                <div class="flex items-center space-x-4">
+                    <div id="loading" class="htmx-indicator">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Создание заказа...
+                        </div>
+                    </div>
+                    
+                    <button 
+                        type="submit"
+                        class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Создать заказ
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- AI Matching Results Modal -->
+<div id="ai-matching-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-96 overflow-hidden">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">🤖 ИИ нашел подходящих репетиторов</h3>
+                <button onclick="closeAIModal()" class="text-gray-400 hover:text-gray-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="ai-results-container" class="space-y-4 max-h-80 overflow-y-auto">
+                <!-- AI results will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Form validation
+    document.getElementById('budget_max').addEventListener('input', function() {
+        const minBudget = parseInt(document.getElementById('budget_min').value);
+        const maxBudget = parseInt(this.value);
+        
+        if (maxBudget && minBudget && maxBudget < minBudget) {
+            this.setCustomValidity('Максимальный бюджет должен быть больше минимального');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Handle successful order creation
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful && event.detail.xhr.status === 201) {
+            const response = JSON.parse(event.detail.xhr.responseText);
+            const useAI = document.getElementById('use_ai_matching').checked;
+            
+            if (useAI) {
+                // Show AI matching results
+                loadAIMatches(response.id);
+            } else {
+                // Redirect to order page
+                window.location.href = `/orders/${response.id}/`;
+            }
+        }
+    });
+
+    // Load AI matches
+    function loadAIMatches(orderId) {
+        document.getElementById('ai-matching-modal').classList.remove('hidden');
+        
+        fetch('/api/ml/match/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                order_id: orderId,
+                limit: 5
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayAIResults(data.matches, orderId);
+        })
+        .catch(error => {
+            console.error('AI matching failed:', error);
+            closeAIModal();
+            showNotification('ИИ-подбор временно недоступен', 'warning');
+        });
+    }
+
+    // Display AI results
+    function displayAIResults(matches, orderId) {
+        const container = document.getElementById('ai-results-container');
+        
+        if (!matches || matches.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-8">ИИ не нашел подходящих репетиторов. Попробуйте расширить критерии поиска.</p>';
+            return;
+        }
+
+        container.innerHTML = matches.map(match => `
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2">
+                            <h4 class="font-medium text-gray-900">${match.profile.name}</h4>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                ${Math.round(match.score * 100)}% совпадение
+                            </span>
+                        </div>
+                        <div class="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                            <span>⭐ ${match.profile.rating}/5</span>
+                            <span>📚 ${match.profile.experience_years} лет опыта</span>
+                        </div>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-600">
+                                <strong>Почему подходит:</strong> ${match.reasons.join(', ')}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end space-y-2">
+                        <button 
+                            onclick="inviteTutor(${match.tutor_id}, ${orderId})"
+                            class="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                        >
+                            Пригласить
+                        </button>
+                        <a href="/tutors/${match.tutor_id}/" class="text-blue-600 hover:text-blue-700 text-sm">
+                            Профиль
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Close AI modal
+    function closeAIModal() {
+        document.getElementById('ai-matching-modal').classList.add('hidden');
+        // Redirect to orders list
+        window.location.href = '/orders/';
+    }
+
+    // Invite tutor
+    function inviteTutor(tutorId, orderId) {
+        // This would send an invitation to the tutor
+        showNotification('Приглашение отправлено репетитору!', 'success');
+    }
+</script>
+{% endblock %}

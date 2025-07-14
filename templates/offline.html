@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+
+{% block title %}Офлайн режим - Tutors Platform{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+        <!-- Offline Icon -->
+        <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728m0-12.728l12.728 12.728M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"></path>
+            </svg>
+        </div>
+        
+        <!-- Title and Description -->
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">
+            Нет подключения к интернету
+        </h1>
+        
+        <p class="text-gray-600 mb-6">
+            Вы находитесь в офлайн режиме. Некоторые функции могут быть недоступны, но вы можете просматривать сохраненную информацию.
+        </p>
+        
+        <!-- Status Indicator -->
+        <div id="connection-status" class="mb-6 p-3 rounded-lg bg-red-50 border border-red-200">
+            <div class="flex items-center justify-center space-x-2 text-red-700">
+                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <span class="text-sm font-medium">Офлайн</span>
+            </div>
+        </div>
+        
+        <!-- Available Actions -->
+        <div class="space-y-4">
+            <div class="bg-blue-50 rounded-lg p-4">
+                <h3 class="font-medium text-blue-900 mb-2">Доступно офлайн:</h3>
+                <ul class="text-sm text-blue-700 space-y-1">
+                    <li>✓ Просмотр сохраненных заказов</li>
+                    <li>✓ Профили репетиторов из кэша</li>
+                    <li>✓ Создание черновиков заказов</li>
+                    <li>✓ Чтение сохраненных сообщений</li>
+                </ul>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="space-y-3">
+                <button 
+                    onclick="checkConnection()"
+                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                    Проверить подключение
+                </button>
+                
+                <button 
+                    onclick="goToCache()"
+                    class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                >
+                    Просмотреть сохраненные данные
+                </button>
+                
+                <a 
+                    href="/" 
+                    class="block w-full px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors text-center"
+                >
+                    На главную
+                </a>
+            </div>
+        </div>
+        
+        <!-- Tips -->
+        <div class="mt-8 text-xs text-gray-500">
+            <p>💡 Совет: Ваши действия будут автоматически синхронизированы при восстановлении подключения</p>
+        </div>
+    </div>
+</div>
+
+<!-- Cached Content Section -->
+<div id="cached-content" class="hidden max-w-4xl mx-auto mt-8 px-4">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Сохраненные данные</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Cached Orders -->
+            <div>
+                <h3 class="font-medium text-gray-900 mb-3">Мои заказы</h3>
+                <div id="cached-orders" class="space-y-2">
+                    <div class="text-sm text-gray-500">Загрузка...</div>
+                </div>
+            </div>
+            
+            <!-- Cached Tutors -->
+            <div>
+                <h3 class="font-medium text-gray-900 mb-3">Репетиторы</h3>
+                <div id="cached-tutors" class="space-y-2">
+                    <div class="text-sm text-gray-500">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Draft Forms -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+            <h3 class="font-medium text-gray-900 mb-3">Создать черновик заказа</h3>
+            <p class="text-sm text-gray-600 mb-4">
+                Заказ будет отправлен автоматически при восстановлении подключения
+            </p>
+            
+            <form id="offline-order-form" class="space-y-4">
+                <div>
+                    <input 
+                        type="text" 
+                        placeholder="Название заказа"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+                <div>
+                    <textarea 
+                        placeholder="Описание задачи"
+                        rows="3"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    ></textarea>
+                </div>
+                <button 
+                    type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                    Сохранить черновик
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Connection status monitoring
+    let isOnline = navigator.onLine;
+    
+    function updateConnectionStatus(online) {
+        const statusDiv = document.getElementById('connection-status');
+        const statusClass = online ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+        const textClass = online ? 'text-green-700' : 'text-red-700';
+        const indicatorClass = online ? 'bg-green-500' : 'bg-red-500';
+        const statusText = online ? 'Онлайн' : 'Офлайн';
+        
+        statusDiv.className = `mb-6 p-3 rounded-lg ${statusClass}`;
+        statusDiv.innerHTML = `
+            <div class="flex items-center justify-center space-x-2 ${textClass}">
+                <div class="w-3 h-3 ${indicatorClass} rounded-full ${online ? '' : 'animate-pulse'}"></div>
+                <span class="text-sm font-medium">${statusText}</span>
+            </div>
+        `;
+        
+        if (online) {
+            showNotification('Подключение восстановлено!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        }
+    }
+    
+    // Listen for connection changes
+    window.addEventListener('online', () => updateConnectionStatus(true));
+    window.addEventListener('offline', () => updateConnectionStatus(false));
+    
+    // Check connection function
+    function checkConnection() {
+        if (navigator.onLine) {
+            // Additional check with a small request
+            fetch('/api/health/', { 
+                method: 'HEAD',
+                cache: 'no-cache',
+                mode: 'no-cors'
+            })
+            .then(() => {
+                updateConnectionStatus(true);
+            })
+            .catch(() => {
+                showNotification('Подключение все еще недоступно', 'warning');
+            });
+        } else {
+            showNotification('Подключение к интернету отсутствует', 'error');
+        }
+    }
+    
+    // Show cached content
+    function goToCache() {
+        const cachedSection = document.getElementById('cached-content');
+        cachedSection.classList.toggle('hidden');
+        
+        if (!cachedSection.classList.contains('hidden')) {
+            loadCachedData();
+        }
+    }
+    
+    // Load cached data from service worker cache
+    async function loadCachedData() {
+        try {
+            // Load cached orders
+            const ordersResponse = await fetch('/api/orders/', { cache: 'force-cache' });
+            if (ordersResponse.ok) {
+                const ordersData = await ordersResponse.json();
+                displayCachedOrders(ordersData.results || []);
+            }
+        } catch (error) {
+            document.getElementById('cached-orders').innerHTML = 
+                '<div class="text-sm text-gray-500">Нет сохраненных заказов</div>';
+        }
+        
+        try {
+            // Load cached tutors
+            const tutorsResponse = await fetch('/api/tutors/', { cache: 'force-cache' });
+            if (tutorsResponse.ok) {
+                const tutorsData = await tutorsResponse.json();
+                displayCachedTutors(tutorsData.results || []);
+            }
+        } catch (error) {
+            document.getElementById('cached-tutors').innerHTML = 
+                '<div class="text-sm text-gray-500">Нет сохраненных репетиторов</div>';
+        }
+    }
+    
+    // Display cached orders
+    function displayCachedOrders(orders) {
+        const container = document.getElementById('cached-orders');
+        
+        if (orders.length === 0) {
+            container.innerHTML = '<div class="text-sm text-gray-500">Нет сохраненных заказов</div>';
+            return;
+        }
+        
+        container.innerHTML = orders.slice(0, 5).map(order => `
+            <div class="p-3 border border-gray-200 rounded-md">
+                <div class="font-medium text-sm text-gray-900">${order.title}</div>
+                <div class="text-xs text-gray-500 mt-1">${order.budget_min}-${order.budget_max} руб/час</div>
+            </div>
+        `).join('');
+    }
+    
+    // Display cached tutors
+    function displayCachedTutors(tutors) {
+        const container = document.getElementById('cached-tutors');
+        
+        if (tutors.length === 0) {
+            container.innerHTML = '<div class="text-sm text-gray-500">Нет сохраненных репетиторов</div>';
+            return;
+        }
+        
+        container.innerHTML = tutors.slice(0, 5).map(tutor => `
+            <div class="p-3 border border-gray-200 rounded-md">
+                <div class="font-medium text-sm text-gray-900">${tutor.user?.first_name} ${tutor.user?.last_name}</div>
+                <div class="text-xs text-gray-500 mt-1">⭐ ${tutor.rating}/5 • ${tutor.hourly_rate} руб/час</div>
+            </div>
+        `).join('');
+    }
+    
+    // Handle offline form submission
+    document.getElementById('offline-order-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const orderData = {
+            id: Date.now(), // Temporary ID
+            title: formData.get('title'),
+            description: formData.get('description'),
+            created_offline: true,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Save to localStorage for background sync
+        const offlineOrders = JSON.parse(localStorage.getItem('offline_orders') || '[]');
+        offlineOrders.push(orderData);
+        localStorage.setItem('offline_orders', JSON.stringify(offlineOrders));
+        
+        // Register background sync
+        if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+            navigator.serviceWorker.ready.then(registration => {
+                return registration.sync.register('order-create');
+            });
+        }
+        
+        showNotification('Черновик сохранен! Будет отправлен при подключении к интернету.', 'success');
+        this.reset();
+    });
+    
+    // Initialize
+    updateConnectionStatus(navigator.onLine);
+</script>
+{% endblock %}

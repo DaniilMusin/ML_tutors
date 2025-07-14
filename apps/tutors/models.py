@@ -17,6 +17,10 @@ class TutorProfile(models.Model):
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     rating_count = models.PositiveIntegerField(default=0)
     
+    # Premium subscription
+    is_premium = models.BooleanField(default=False)
+    premium_expires_at = models.DateTimeField(null=True, blank=True)
+    
     # Vector embedding for AI matching
     vector = VectorField(dimensions=768, blank=True, null=True)
     
