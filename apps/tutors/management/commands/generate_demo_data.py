@@ -8,12 +8,17 @@ from datetime import timedelta
 
 from apps.tutors.models import TutorProfile, Subject, TutorReview
 from apps.orders.models import Order
+from apps.ml.services import AIMatchingService
 
 User = get_user_model()
 
 
 class Command(BaseCommand):
     help = 'Generate demo data for tutors platform'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ai_service = None
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -39,12 +44,25 @@ class Command(BaseCommand):
             self.stdout.write('Clearing existing demo data...')
             self.clear_demo_data()
         
+        # Initialize AI service for vector generation
+        try:
+            self.ai_service = AIMatchingService()
+            self.stdout.write('AI service initialized for vector generation')
+        except Exception as e:
+            self.stdout.write(
+                self.style.WARNING(f'Could not initialize AI service: {e}. Vectors will not be generated.')
+            )
+        
         with transaction.atomic():
             self.stdout.write('Creating subjects...')
             subjects = self.create_subjects()
             
             self.stdout.write(f'Creating {options["tutors"]} tutors...')
             tutors = self.create_tutors(options['tutors'], subjects)
+            
+            if self.ai_service:
+                self.stdout.write('Generating vector embeddings for tutors...')
+                self.generate_tutor_vectors(tutors)
             
             self.stdout.write(f'Creating {options["orders"]} orders...')
             self.create_orders(options['orders'], subjects)
@@ -295,3 +313,37 @@ class Command(BaseCommand):
                     except:
                         # Skip if review already exists (unique constraint)
                         pass
+
+    def generate_tutor_vectors(self, tutors):
+        """Generate vector embeddings for tutors based on their bio and subjects."""
+        for i, tutor in enumerate(tutors):
+            try:
+                # Create text representation for embedding
+                subjects_text = ', '.join([s.name for s in tutor.subjects.all()])
+                bio_text = tutor.bio if tutor.bio else "Репетитор без описания"
+                
+                # Combine bio with subjects and experience info
+                full_text = f"{bio_text}. Предметы: {subjects_text}. Опыт: {tutor.experience_years} лет. Стоимость: {tutor.hourly_rate} руб/час."
+                
+                # Get embedding
+                embedding = self.ai_service._get_embedding(full_text)
+                
+                if embedding:
+                    tutor.vector = embedding
+                    tutor.save()
+                    
+                    if (i + 1) % 10 == 0:
+                        self.stdout.write(f'Generated vectors for {i + 1}/{len(tutors)} tutors')
+                else:
+                    self.stdout.write(
+                        self.style.WARNING(f'Failed to generate vector for tutor {tutor.id}')
+                    )
+                    
+            except Exception as e:
+                self.stdout.write(
+                    self.style.WARNING(f'Error generating vector for tutor {tutor.id}: {e}')
+                )
+        
+        self.stdout.write(
+            self.style.SUCCESS(f'Vector generation completed for {len(tutors)} tutors')
+        )

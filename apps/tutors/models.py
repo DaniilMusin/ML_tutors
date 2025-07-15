@@ -24,7 +24,7 @@ class TutorProfile(models.Model):
                                          help_text="Stripe customer ID for subscription management")
     
     # Vector embedding for AI matching
-    vector = VectorField(dimensions=768, blank=True, null=True)
+    vector = VectorField(dimensions=1536, blank=True, null=True)
     
     # Availability
     availability = models.JSONField(default=dict, help_text="Weekly availability schedule")
