@@ -74,7 +74,7 @@ docker-compose exec web python manage.py createsuperuser
 
 7. Загрузите тестовые данные:
 ```bash
-docker-compose exec web python manage.py loaddata fixtures/initial_data.json
+docker-compose exec web python manage.py loaddata fixtures/demo_data.json
 ```
 
 ### Доступ к приложению
