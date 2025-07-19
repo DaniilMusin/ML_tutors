@@ -6,9 +6,9 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.celery import CeleryIntegration
+# import sentry_sdk  # временно отключено
+# from sentry_sdk.integrations.django import DjangoIntegration  # временно отключено
+# from sentry_sdk.integrations.celery import CeleryIntegration  # временно отключено
 
 load_dotenv()
 
@@ -60,7 +60,7 @@ if not DEBUG:
 # Application definition
 
 INSTALLED_APPS = [
-    'daphne',
+    # 'daphne',  # временно отключено
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -68,30 +68,30 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework_simplejwt',
-    'corsheaders',
-    'django_prometheus',
-    'channels',
+    # 'rest_framework_simplejwt',  # временно отключено
+    # 'corsheaders',  # временно отключено
+    # 'django_prometheus',  # временно отключено
+    # 'channels',  # временно отключено
     # Local apps
     'apps.users',
-    'apps.orders',
-    'apps.tutors',
-    'apps.ml',
-    'apps.payments',
+    # 'apps.orders',  # временно отключено
+    # 'apps.tutors',  # временно отключено
+    # 'apps.ml',  # временно отключено
+    # 'apps.payments',  # временно отключено
 ]
 
 MIDDLEWARE = [
-    'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    # 'django_prometheus.middleware.PrometheusBeforeMiddleware',  # временно отключено
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # временно отключено
+    # 'corsheaders.middleware.CorsMiddleware',  # временно отключено
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_prometheus.middleware.PrometheusAfterMiddleware',
+    # 'django_prometheus.middleware.PrometheusAfterMiddleware',  # временно отключено
 ]
 
 ROOT_URLCONF = 'tutors_platform.urls'
@@ -113,13 +113,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'tutors_platform.wsgi.application'
-ASGI_APPLICATION = 'tutors_platform.asgi.application'
+# ASGI_APPLICATION = 'tutors_platform.asgi.application'  # временно отключено
 
 # Database
 DATABASES = {
-    'default': dj_database_url.parse(
-        os.getenv('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/tutors_platform')
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # Password validation
@@ -161,33 +162,33 @@ AUTH_USER_MODEL = 'users.User'
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',  # временно отключено
 }
 
 # JWT Settings
-from datetime import timedelta
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,
-}
+# from datetime import timedelta
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+#     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+#     'ROTATE_REFRESH_TOKENS': True,
+# }
 
 # Channels
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
-        },
-    },
-}
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             'hosts': [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
+#         },
+#     },
+# }
 
 # Celery Configuration
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
@@ -213,16 +214,16 @@ STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Sentry
-if os.getenv('SENTRY_DSN'):
-    sentry_sdk.init(
-        dsn=os.getenv('SENTRY_DSN'),
-        integrations=[
-            DjangoIntegration(auto_enabling=True),
-            CeleryIntegration(auto_enabling=True),
-        ],
-        traces_sample_rate=1.0,
-        send_default_pii=True,
-    )
+# if os.getenv('SENTRY_DSN'):
+#     sentry_sdk.init(
+#         dsn=os.getenv('SENTRY_DSN'),
+#         integrations=[
+#             DjangoIntegration(auto_enabling=True),
+#             CeleryIntegration(auto_enabling=True),
+#         ],
+#         traces_sample_rate=1.0,
+#         send_default_pii=True,
+#     )
 
 # Logging
 LOGGING = {
