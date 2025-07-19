@@ -276,7 +276,10 @@ def _handle_subscription_payment(invoice):
             tutor_profile.is_premium = True
             tutor_profile.save()
             
-            logger.info(f"Premium subscription extended for tutor {tutor_profile.user.username} until {tutor_profile.premium_expires_at}")
+            logger.info(
+                f"Premium subscription extended for tutor "
+                f"{tutor_profile.user.username} until {tutor_profile.premium_expires_at}"
+            )
         else:
             logger.error(f"No tutor found with customer_id {customer_id}")
         
