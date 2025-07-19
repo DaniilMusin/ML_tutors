@@ -42,6 +42,10 @@ class Order(models.Model):
     # Order status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     
+    # AI matching fields
+    ai_matches = models.JSONField(default=list, blank=True, help_text="AI-generated tutor matches")
+    ai_matches_processed = models.BooleanField(default=False, help_text="Whether AI matching has been processed")
+    
     # Meta fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

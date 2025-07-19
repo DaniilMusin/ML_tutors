@@ -386,8 +386,8 @@ class AIMatchingService:
             })
             
             system_prompt = """You are an AI assistant that helps match students with tutors. 
-            Given a student's order and a list of tutor candidates, rank the top tutors "
-            "that best match the student's needs.
+            Given a student's order and a list of tutor candidates, rank the top tutors 
+            that best match the student's needs.
             
             Consider:
             - Subject expertise and experience
@@ -397,8 +397,8 @@ class AIMatchingService:
             - Overall quality (rating, reviews)
             
             Return a JSON array with tutor IDs in ranked order (best first).
-            Example: [{"id": 1, "reason": "Perfect subject match and budget"}, "
-            "{id": 3, "reason": "High rating and experience"}]
+            Example: [{"id": 1, "reason": "Perfect subject match and budget"}, 
+            {"id": 3, "reason": "High rating and experience"}]
             """
             
             # Use retry wrapper for LLM call
@@ -409,7 +409,11 @@ class AIMatchingService:
                 return None
             
             # Parse response
-            result = json.loads(response.choices[0].message.content)
+            try:
+                result = json.loads(response.choices[0].message.content)
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse LLM response as JSON: {e}")
+                return None
             
             # Convert to expected format
             reranked = []
