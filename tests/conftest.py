@@ -1,4 +1,11 @@
 import pytest
+import django
+from django.conf import settings
+
+# Настройка Django перед импортом моделей
+if not settings.configured:
+    django.setup()
+
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from decimal import Decimal
