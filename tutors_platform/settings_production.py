@@ -2,6 +2,7 @@
 Production settings for tutors_platform project.
 """
 
+import os
 from .settings import *
 
 # Force production settings
@@ -25,7 +26,7 @@ X_FRAME_OPTIONS = 'DENY'
 # Database optimization for production
 DATABASES['default']['CONN_MAX_AGE'] = 600
 DATABASES['default']['OPTIONS'] = {
-    'MAX_CONNS': 20,
+    'MAX_CONNS': 20,  # This is not a valid PostgreSQL option, but keeping for compatibility
 }
 
 # Cache settings for production

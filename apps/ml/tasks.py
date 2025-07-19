@@ -3,7 +3,6 @@ Celery tasks for ML operations.
 """
 import logging
 from celery import shared_task
-from django.conf import settings
 from django.db import transaction
 
 from apps.orders.models import Order
@@ -105,12 +104,12 @@ def update_tutor_embeddings():
         updated_count = 0
         for tutor in tutors:
             try:
-                # Generate embedding for tutor description
-                if tutor.description:
-                    embedding = matching_service._get_embedding(tutor.description)
+                # Generate embedding for tutor bio
+                if tutor.bio:
+                    embedding = matching_service._get_embedding(tutor.bio)
                     if embedding:
-                        tutor.embedding = embedding
-                        tutor.save(update_fields=['embedding'])
+                        tutor.vector = embedding
+                        tutor.save(update_fields=['vector'])
                         updated_count += 1
                         
             except Exception as e:
