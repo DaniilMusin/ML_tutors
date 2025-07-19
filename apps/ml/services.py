@@ -43,7 +43,10 @@ def retry_openai_call(max_retries=3, base_delay=0.1, max_delay=0.7):
                     
                     # Calculate delay with exponential backoff + jitter
                     delay = min(base_delay * (2 ** attempt) + random.uniform(0, 0.1), max_delay)
-                    logger.warning(f"OpenAI rate limit hit, retrying in {delay:.2f}s (attempt {attempt + 1}/{max_retries})")
+                    logger.warning(
+                        f"OpenAI rate limit hit, retrying in {delay:.2f}s "
+                        f"(attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(delay)
                     
                 except (openai.APITimeoutError, openai.APIConnectionError) as e:
@@ -383,7 +386,8 @@ class AIMatchingService:
             })
             
             system_prompt = """You are an AI assistant that helps match students with tutors. 
-            Given a student's order and a list of tutor candidates, rank the top tutors that best match the student's needs.
+            Given a student's order and a list of tutor candidates, rank the top tutors "
+            "that best match the student's needs.
             
             Consider:
             - Subject expertise and experience
@@ -393,7 +397,8 @@ class AIMatchingService:
             - Overall quality (rating, reviews)
             
             Return a JSON array with tutor IDs in ranked order (best first).
-            Example: [{"id": 1, "reason": "Perfect subject match and budget"}, {"id": 3, "reason": "High rating and experience"}]
+            Example: [{"id": 1, "reason": "Perfect subject match and budget"}, "
+            "{id": 3, "reason": "High rating and experience"}]
             """
             
             # Use retry wrapper for LLM call
