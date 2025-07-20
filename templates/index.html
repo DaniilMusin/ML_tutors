@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Tutors Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white">
+    <div class="absolute inset-0 bg-black opacity-20"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                Найди идеального репетитора
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-blue-100">
+                ИИ-подбор репетиторов для любых предметов и целей
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/orders/create/" class="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                    🎯 Найти репетитора
+                </a>
+                <a href="/tutors/register/" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+                    👨‍🏫 Стать репетитором
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="relative bg-white bg-opacity-10 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div>
+                    <div class="text-3xl font-bold mb-2">500+</div>
+                    <div class="text-blue-100">Репетиторов</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold mb-2">50+</div>
+                    <div class="text-blue-100">Предметов</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold mb-2">1000+</div>
+                    <div class="text-blue-100">Успешных занятий</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Почему выбирают нас?
+            </h2>
+            <p class="text-xl text-gray-600">
+                Инновационные технологии для эффективного обучения
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow">
+                <div class="text-4xl mb-4">🤖</div>
+                <h3 class="text-xl font-semibold mb-4">ИИ-подбор репетиторов</h3>
+                <p class="text-gray-600">
+                    Наша система искусственного интеллекта анализирует ваш запрос и находит наиболее подходящих репетиторов
+                </p>
+            </div>
+            
+            <div class="bg-white rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow">
+                <div class="text-4xl mb-4">⚡</div>
+                <h3 class="text-xl font-semibold mb-4">Быстрый поиск</h3>
+                <p class="text-gray-600">
+                    Получите предложения от репетиторов уже через несколько минут после создания заказа
+                </p>
+            </div>
+            
+            <div class="bg-white rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow">
+                <div class="text-4xl mb-4">🛡️</div>
+                <h3 class="text-xl font-semibold mb-4">Безопасные платежи</h3>
+                <p class="text-gray-600">
+                    Все платежи защищены и проходят через надежную систему с гарантией возврата
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Subjects -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Популярные предметы
+            </h2>
+            <p class="text-xl text-gray-600">
+                Выберите предмет, по которому нужна помощь
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <a href="/orders/create/?subject=math" class="group">
+                <div class="bg-gradient-to-br from-red-500 to-pink-600 rounded-lg p-6 text-center text-white hover:shadow-lg transition-shadow">
+                    <div class="text-3xl mb-2">📐</div>
+                    <div class="font-semibold">Математика</div>
+                </div>
+            </a>
+            
+            <a href="/orders/create/?subject=physics" class="group">
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg p-6 text-center text-white hover:shadow-lg transition-shadow">
+                    <div class="text-3xl mb-2">⚡</div>
+                    <div class="font-semibold">Физика</div>
+                </div>
+            </a>
+            
+            <a href="/orders/create/?subject=chemistry" class="group">
+                <div class="bg-gradient-to-br from-green-500 to-teal-600 rounded-lg p-6 text-center text-white hover:shadow-lg transition-shadow">
+                    <div class="text-3xl mb-2">🧪</div>
+                    <div class="font-semibold">Химия</div>
+                </div>
+            </a>
+            
+            <a href="/orders/create/?subject=english" class="group">
+                <div class="bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg p-6 text-center text-white hover:shadow-lg transition-shadow">
+                    <div class="text-3xl mb-2">🇬🇧</div>
+                    <div class="font-semibold">Английский</div>
+                </div>
+            </a>
+            
+            <a href="/orders/create/?subject=programming" class="group">
+                <div class="bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg p-6 text-center text-white hover:shadow-lg transition-shadow">
+                    <div class="text-3xl mb-2">💻</div>
+                    <div class="font-semibold">Программирование</div>
+                </div>
+            </a>
+            
+            <a href="/orders/create/?subject=history" class="group">
+                <div class="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg p-6 text-center text-white hover:shadow-lg transition-shadow">
+                    <div class="text-3xl mb-2">📚</div>
+                    <div class="font-semibold">История</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Как это работает?
+            </h2>
+            <p class="text-xl text-gray-600">
+                Всего 3 простых шага до начала занятий
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
+                <h3 class="text-xl font-semibold mb-4">Создайте заказ</h3>
+                <p class="text-gray-600">
+                    Опишите, с чем нужна помощь, укажите бюджет и предпочтения
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
+                <h3 class="text-xl font-semibold mb-4">Получите предложения</h3>
+                <p class="text-gray-600">
+                    ИИ найдет подходящих репетиторов, которые предложат свои услуги
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
+                <h3 class="text-xl font-semibold mb-4">Начните занятия</h3>
+                <p class="text-gray-600">
+                    Выберите репетитора и начните обучение в удобном формате
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Отзывы наших пользователей
+            </h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-gray-50 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</div>
+                </div>
+                <p class="text-gray-600 mb-4">
+                    "Отличная платформа! Нашел репетитора по математике за день. Занятия проходят онлайн, очень удобно."
+                </p>
+                <div class="font-semibold">Анна, 16 лет</div>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</div>
+                </div>
+                <p class="text-gray-600 mb-4">
+                    "ИИ действительно подобрал идеального репетитора. Занимаюсь английским уже 3 месяца, прогресс отличный!"
+                </p>
+                <div class="font-semibold">Михаил, 25 лет</div>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</div>
+                </div>
+                <p class="text-gray-600 mb-4">
+                    "Как репетитор, очень доволен платформой. Много интересных заказов и удобная система оплаты."
+                </p>
+                <div class="font-semibold">Дмитрий, репетитор</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 bg-blue-600 text-white">
+    <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">
+            Готовы начать обучение?
+        </h2>
+        <p class="text-xl mb-8 text-blue-100">
+            Создайте заказ прямо сейчас и получите предложения от лучших репетиторов
+        </p>
+        <a href="/orders/create/" class="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-block">
+            Создать заказ
+        </a>
+    </div>
+</section>
+{% endblock %}

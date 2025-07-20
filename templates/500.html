@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Ошибка сервера - Tutors Platform{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-pink-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full text-center">
+        <!-- 500 Icon -->
+        <div class="mb-8">
+            <div class="mx-auto h-32 w-32 bg-red-600 rounded-full flex items-center justify-center mb-6">
+                <span class="text-white text-6xl font-bold">500</span>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                Ошибка сервера
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">
+                Что-то пошло не так на нашей стороне. Мы уже работаем над решением.
+            </p>
+        </div>
+        
+        <!-- Status Information -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                Статус системы
+            </h2>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div class="flex items-center">
+                        <span class="text-green-600 mr-2">🟢</span>
+                        <span class="font-medium text-gray-900">Основные сервисы</span>
+                    </div>
+                    <span class="text-sm text-green-600">Работают</span>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                    <div class="flex items-center">
+                        <span class="text-yellow-600 mr-2">🟡</span>
+                        <span class="font-medium text-gray-900">ИИ-подбор</span>
+                    </div>
+                    <span class="text-sm text-yellow-600">Проверка</span>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div class="flex items-center">
+                        <span class="text-red-600 mr-2">🔴</span>
+                        <span class="font-medium text-gray-900">Текущая страница</span>
+                    </div>
+                    <span class="text-sm text-red-600">Ошибка</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- What You Can Do -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                Что вы можете сделать
+            </h2>
+            <div class="space-y-3">
+                <button 
+                    onclick="window.location.reload()"
+                    class="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                    <span class="text-2xl mr-3">🔄</span>
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Обновить страницу</div>
+                        <div class="text-sm text-gray-500">Попробовать еще раз</div>
+                    </div>
+                </button>
+                
+                <a href="/" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <span class="text-2xl mr-3">🏠</span>
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Вернуться на главную</div>
+                        <div class="text-sm text-gray-500">Начать заново</div>
+                    </div>
+                </a>
+                
+                <button 
+                    onclick="history.back()"
+                    class="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                    <span class="text-2xl mr-3">←</span>
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Вернуться назад</div>
+                        <div class="text-sm text-gray-500">К предыдущей странице</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Support Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                Нужна помощь?
+            </h2>
+            <p class="text-gray-600 mb-4">
+                Если проблема повторяется, сообщите нам об этом
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a href="/support/" class="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                    🚨 Сообщить об ошибке
+                </a>
+                <a href="/contact/" class="flex-1 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                    💬 Поддержка
+                </a>
+            </div>
+        </div>
+        
+        <!-- Technical Details (for developers) -->
+        <div class="mt-8 text-left">
+            <details class="bg-white rounded-lg shadow-lg p-4">
+                <summary class="cursor-pointer font-medium text-gray-900 mb-2">
+                    🔧 Техническая информация
+                </summary>
+                <div class="text-sm text-gray-600 space-y-2">
+                    <div><strong>Ошибка:</strong> Internal Server Error (500)</div>
+                    <div><strong>Время:</strong> <span id="error-time"></span></div>
+                    <div><strong>URL:</strong> <span id="error-url"></span></div>
+                    <div><strong>User Agent:</strong> <span id="error-ua"></span></div>
+                    {% if request_id %}
+                        <div><strong>Request ID:</strong> {{ request_id }}</div>
+                    {% endif %}
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+
+<!-- Error Animation -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-10 left-10 animate-pulse">
+        <span class="text-4xl">⚠️</span>
+    </div>
+    <div class="absolute top-20 right-20 animate-bounce">
+        <span class="text-3xl">🔧</span>
+    </div>
+    <div class="absolute bottom-20 left-20 animate-spin">
+        <span class="text-2xl">⚙️</span>
+    </div>
+    <div class="absolute bottom-10 right-10 animate-pulse">
+        <span class="text-3xl">🛠️</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Fill in technical details
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        document.getElementById('error-time').textContent = now.toLocaleString('ru-RU');
+        document.getElementById('error-url').textContent = window.location.href;
+        document.getElementById('error-ua').textContent = navigator.userAgent.substring(0, 50) + '...';
+        
+        // Auto-refresh after 30 seconds
+        setTimeout(() => {
+            const refreshBtn = document.createElement('button');
+            refreshBtn.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            refreshBtn.innerHTML = '🔄 Автообновление через 10с';
+            refreshBtn.onclick = () => window.location.reload();
+            document.body.appendChild(refreshBtn);
+            
+            let countdown = 10;
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                refreshBtn.innerHTML = `🔄 Автообновление через ${countdown}с`;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.reload();
+                }
+            }, 1000);
+        }, 30000);
+        
+        // Add error reporting
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript error:', e.error);
+            // You could send this to your error tracking service
+        });
+        
+        // Add click tracking for support
+        const supportLinks = document.querySelectorAll('a[href*="support"], a[href*="contact"]');
+        supportLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                console.log('Support link clicked:', this.href);
+                // You could track this in analytics
+            });
+        });
+    });
+    
+    // Handle page visibility changes
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            // Page became visible again, maybe the error is fixed
+            console.log('Page became visible, checking if error is resolved...');
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block title %}Кабинет репетитора - Tutors Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Dashboard Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-6">
+                <div class="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                    {{ user.first_name.0|default:user.username.0|upper }}
+                </div>
+                
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                        Кабинет репетитора
+                    </h1>
+                    <p class="text-gray-600">{{ user.get_full_name|default:user.username }}</p>
+                    <div class="flex items-center mt-2">
+                        <span class="text-yellow-400 text-lg">⭐⭐⭐⭐⭐</span>
+                        <span class="text-lg font-semibold ml-2">{{ tutor_profile.rating|default:"—" }}</span>
+                        <span class="text-gray-600 ml-2">({{ tutor_profile.reviews_count|default:0 }} отзывов)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button 
+                    hx-get="/api/tutors/profile/edit/"
+                    hx-target="#profile-modal"
+                    hx-swap="innerHTML"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                    ✏️ Редактировать профиль
+                </button>
+                
+                <a href="/tutors/orders/" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    📋 Все заказы
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="text-3xl text-blue-600 mr-4">📚</div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.total_orders|default:0 }}</div>
+                    <div class="text-gray-600">Всего заказов</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="text-3xl text-green-600 mr-4">✅</div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.completed_orders|default:0 }}</div>
+                    <div class="text-gray-600">Завершенные</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="text-3xl text-purple-600 mr-4">💰</div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.total_earnings|default:0 }} ₽</div>
+                    <div class="text-gray-600">Общий заработок</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="text-3xl text-orange-600 mr-4">👥</div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.active_students|default:0 }}</div>
+                    <div class="text-gray-600">Активные ученики</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Recent Orders -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Последние заказы</h2>
+                    <a href="/tutors/orders/" class="text-blue-600 hover:text-blue-800 font-medium">
+                        Все заказы →
+                    </a>
+                </div>
+                
+                {% if recent_orders %}
+                    <div class="space-y-4">
+                        {% for order in recent_orders %}
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-900">{{ order.title }}</h3>
+                                    <p class="text-sm text-gray-600">{{ order.subject.name }} • {{ order.budget_min }}-{{ order.budget_max }} ₽/час</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ order.created_at|date:"d.m.Y H:i" }}</p>
+                                    
+                                    {% if order.description %}
+                                        <p class="text-sm text-gray-700 mt-2 line-clamp-2">{{ order.description }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="flex flex-col items-end space-y-2">
+                                    <span class="px-2 py-1 text-xs rounded-full 
+                                        {% if order.status == 'active' %}bg-green-100 text-green-800
+                                        {% elif order.status == 'completed' %}bg-blue-100 text-blue-800
+                                        {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                    
+                                    <div class="flex space-x-2">
+                                        <button 
+                                            hx-get="/api/orders/{{ order.id }}/details/"
+                                            hx-target="#order-modal"
+                                            hx-swap="innerHTML"
+                                            class="text-blue-600 hover:text-blue-800 text-sm"
+                                        >
+                                            Подробнее
+                                        </button>
+                                        
+                                        {% if order.status == 'active' %}
+                                            <button 
+                                                hx-post="/api/orders/{{ order.id }}/apply/"
+                                                hx-target="#order-modal"
+                                                hx-swap="innerHTML"
+                                                class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                                            >
+                                                Откликнуться
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <div class="text-gray-400 text-4xl mb-4">📝</div>
+                        <p class="text-gray-600">Пока нет доступных заказов</p>
+                        <p class="text-sm text-gray-500 mt-2">Новые заказы появятся здесь автоматически</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Profile Summary -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Мой профиль</h3>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Предметы:</span>
+                        <span class="font-medium">{{ tutor_profile.subjects.count }}</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Опыт:</span>
+                        <span class="font-medium">{{ tutor_profile.experience_years }} лет</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Цена:</span>
+                        <span class="font-medium text-blue-600">{{ tutor_profile.hourly_rate }} ₽/час</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Формат:</span>
+                        <span class="font-medium">{{ tutor_profile.get_format_display }}</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex flex-wrap gap-2">
+                        {% for subject in tutor_profile.subjects.all %}
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                                {{ subject.name }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Быстрые действия</h3>
+                
+                <div class="space-y-3">
+                    <button 
+                        hx-get="/api/tutors/schedule/"
+                        hx-target="#schedule-modal"
+                        hx-swap="innerHTML"
+                        class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">📅</span>
+                            <div>
+                                <div class="font-medium text-gray-900">Расписание</div>
+                                <div class="text-sm text-gray-600">Управление временем</div>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button 
+                        hx-get="/api/tutors/materials/"
+                        hx-target="#materials-modal"
+                        hx-swap="innerHTML"
+                        class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">📚</span>
+                            <div>
+                                <div class="font-medium text-gray-900">Материалы</div>
+                                <div class="text-sm text-gray-600">Учебные ресурсы</div>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button 
+                        hx-get="/api/tutors/earnings/"
+                        hx-target="#earnings-modal"
+                        hx-swap="innerHTML"
+                        class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">💰</span>
+                            <div>
+                                <div class="font-medium text-gray-900">Заработок</div>
+                                <div class="text-sm text-gray-600">Финансовая статистика</div>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Notifications -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Уведомления</h3>
+                
+                {% if notifications %}
+                    <div class="space-y-3">
+                        {% for notification in notifications %}
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <div class="text-sm text-gray-900">{{ notification.message }}</div>
+                            <div class="text-xs text-gray-500 mt-1">{{ notification.created_at|date:"d.m.Y H:i" }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <div class="text-gray-400 text-2xl mb-2">🔔</div>
+                        <p class="text-gray-600 text-sm">Нет новых уведомлений</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="profile-modal"></div>
+<div id="order-modal"></div>
+<div id="schedule-modal"></div>
+<div id="materials-modal"></div>
+<div id="earnings-modal"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-refresh dashboard every 30 seconds
+    setInterval(() => {
+        htmx.ajax('GET', '/api/tutors/dashboard/refresh/', {target: '#dashboard-content'});
+    }, 30000);
+    
+    // Handle modal actions
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful && event.detail.elt.closest('[id$="-modal"]')) {
+            // Show success notification for profile updates
+            if (event.detail.elt.closest('#profile-modal')) {
+                showNotification('Профиль успешно обновлен!', 'success');
+            }
+        }
+    });
+</script>
+{% endblock %}
