@@ -200,8 +200,12 @@ def train_ranker():
             try:
                 ndcg = ndcg_score(y_true, y_score, k=3)
                 ndcg_scores.append(ndcg)
-            except:
-                pass
+            except (ValueError, TypeError) as e:
+                # Skip invalid data for NDCG calculation
+                print(f"Warning: Could not calculate NDCG for order {order_id}: {e}")
+            except Exception as e:
+                # Log unexpected errors but continue processing
+                print(f"Error calculating NDCG for order {order_id}: {e}")
     
     if ndcg_scores:
         print(f"NDCG@3 на тестовом наборе: {np.mean(ndcg_scores):.4f} ± {np.std(ndcg_scores):.4f}")

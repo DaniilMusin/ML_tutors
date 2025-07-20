@@ -1,7 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from django.db import transaction
+from django.db import transaction, IntegrityError
+from django.core.exceptions import ValidationError
 from decimal import Decimal
 import random
 from datetime import timedelta
@@ -312,9 +313,16 @@ class Command(BaseCommand):
                             review_text=random.choice(review_texts),
                             created_at=timezone.now() - timedelta(days=random.randint(0, 365))
                         )
-                    except:
+                    except (IntegrityError, ValidationError) as e:
                         # Skip if review already exists (unique constraint)
-                        pass
+                        self.stdout.write(
+                            self.style.WARNING(f'Skipping duplicate review for tutor {tutor.id}: {e}')
+                        )
+                    except Exception as e:
+                        # Log unexpected errors but continue processing
+                        self.stdout.write(
+                            self.style.ERROR(f'Unexpected error creating review for tutor {tutor.id}: {e}')
+                        )
 
     def generate_tutor_vectors(self, tutors):
         """Generate vector embeddings for tutors based on their bio and subjects."""
