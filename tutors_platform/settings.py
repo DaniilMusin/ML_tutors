@@ -74,10 +74,10 @@ INSTALLED_APPS = [
     # 'channels',  # временно отключено
     # Local apps
     'apps.users',
-    # 'apps.orders',  # временно отключено
-    # 'apps.tutors',  # временно отключено
-    # 'apps.ml',  # временно отключено
-    # 'apps.payments',  # временно отключено
+    'apps.orders',
+    'apps.tutors',
+    'apps.ml',
+    'apps.payments',
 ]
 
 MIDDLEWARE = [
