@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои заказы - Tutors Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Мои заказы</h1>
+                <p class="text-gray-600">Управляйте своими заказами на репетиторов</p>
+            </div>
+            
+            <a href="/orders/create/" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                ➕ Создать заказ
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <form 
+            hx-get="/api/orders/list/"
+            hx-trigger="submit, change from:select"
+            hx-target="#orders-results"
+            hx-indicator="#filters-loading"
+            class="space-y-6"
+        >
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                        Статус
+                    </label>
+                    <select 
+                        name="status" 
+                        id="status"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Все статусы</option>
+                        <option value="active">Активные</option>
+                        <option value="in_progress">В работе</option>
+                        <option value="completed">Завершенные</option>
+                        <option value="cancelled">Отмененные</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
+                        Предмет
+                    </label>
+                    <select 
+                        name="subject" 
+                        id="subject"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Все предметы</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.id }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="sort" class="block text-sm font-medium text-gray-700 mb-2">
+                        Сортировка
+                    </label>
+                    <select 
+                        name="sort" 
+                        id="sort"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="created_at">По дате создания</option>
+                        <option value="updated_at">По дате обновления</option>
+                        <option value="budget_min">По бюджету</option>
+                        <option value="title">По названию</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-end">
+                    <button 
+                        type="submit"
+                        class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                        🔍 Применить
+                    </button>
+                </div>
+            </div>
+            
+            <div id="filters-loading" class="htmx-indicator">
+                <div class="flex items-center text-gray-600">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                    Загрузка...
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Results -->
+    <div id="orders-results">
+        <!-- Initial state -->
+        <div class="text-center py-12">
+            <div class="text-gray-500 text-lg">
+                Загрузка заказов...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Card Template -->
+<template id="order-card-template">
+    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-start justify-between">
+            <div class="flex-1">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ order.title }}</h3>
+                    <span class="px-3 py-1 text-sm rounded-full 
+                        {% if order.status == 'active' %}bg-green-100 text-green-800
+                        {% elif order.status == 'in_progress' %}bg-blue-100 text-blue-800
+                        {% elif order.status == 'completed' %}bg-gray-100 text-gray-800
+                        {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">📚</span>
+                        <span class="text-sm text-gray-700">{{ order.subject.name }}</span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">💰</span>
+                        <span class="text-sm text-gray-700">{{ order.budget_min }}-{{ order.budget_max }} ₽/час</span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">📅</span>
+                        <span class="text-sm text-gray-700">{{ order.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                </div>
+                
+                {% if order.description %}
+                    <p class="text-gray-700 mb-4 line-clamp-2">{{ order.description }}</p>
+                {% endif %}
+                
+                <!-- Applications -->
+                {% if order.applications.exists %}
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-medium text-gray-900">Отклики репетиторов ({{ order.applications.count }})</h4>
+                            <button 
+                                hx-get="/api/orders/{{ order.id }}/applications/"
+                                hx-target="#applications-modal"
+                                hx-swap="innerHTML"
+                                class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            >
+                                Посмотреть все
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            {% for application in order.applications.all|slice:":3" %}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                        {{ application.tutor.user.first_name.0|default:application.tutor.user.username.0|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-sm">{{ application.tutor.user.get_full_name }}</div>
+                                        <div class="text-xs text-gray-500">{{ application.tutor.rating|default:"—" }} ⭐ • {{ application.tutor.experience_years }} лет опыта</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm font-medium text-blue-600">{{ application.price }} ₽/час</span>
+                                    <button 
+                                        hx-get="/api/applications/{{ application.id }}/details/"
+                                        hx-target="#application-modal"
+                                        hx-swap="innerHTML"
+                                        class="text-blue-600 hover:text-blue-800 text-sm"
+                                    >
+                                        Подробнее
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="flex flex-col space-y-2 ml-4">
+                <button 
+                    hx-get="/api/orders/{{ order.id }}/details/"
+                    hx-target="#order-modal"
+                    hx-swap="innerHTML"
+                    class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                    Подробнее
+                </button>
+                
+                {% if order.status == 'active' %}
+                    <button 
+                        hx-post="/api/orders/{{ order.id }}/edit/"
+                        hx-target="#order-modal"
+                        hx-swap="innerHTML"
+                        class="text-green-600 hover:text-green-800 text-sm font-medium"
+                    >
+                        Редактировать
+                    </button>
+                    
+                    <button 
+                        hx-post="/api/orders/{{ order.id }}/cancel/"
+                        hx-confirm="Вы уверены, что хотите отменить этот заказ?"
+                        hx-target="#order-modal"
+                        hx-swap="innerHTML"
+                        class="text-red-600 hover:text-red-800 text-sm font-medium"
+                    >
+                        Отменить
+                    </button>
+                {% endif %}
+                
+                {% if order.status == 'in_progress' %}
+                    <button 
+                        hx-post="/api/orders/{{ order.id }}/complete/"
+                        hx-confirm="Подтвердить завершение заказа?"
+                        hx-target="#order-modal"
+                        hx-swap="innerHTML"
+                        class="text-green-600 hover:text-green-800 text-sm font-medium"
+                    >
+                        Завершить
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Order Details Modal Template -->
+<template id="order-details-modal">
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">{{ order.title }}</h2>
+                    <button 
+                        onclick="this.closest('.fixed').remove()"
+                        class="text-gray-400 hover:text-gray-600"
+                    >
+                        ✕
+                    </button>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Order Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-3">Информация о заказе</h3>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Статус:</span>
+                                    <span class="font-medium">{{ order.get_status_display }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Предмет:</span>
+                                    <span class="font-medium">{{ order.subject.name }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Бюджет:</span>
+                                    <span class="font-medium">{{ order.budget_min }}-{{ order.budget_max }} ₽/час</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Создан:</span>
+                                    <span class="font-medium">{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-3">Предпочтения</h3>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Формат:</span>
+                                    <span class="font-medium">{{ order.get_format_display }}</span>
+                                </div>
+                                {% if order.location %}
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Местоположение:</span>
+                                        <span class="font-medium">{{ order.location }}</span>
+                                    </div>
+                                {% endif %}
+                                {% if order.schedule_days %}
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Дни:</span>
+                                        <span class="font-medium">{{ order.schedule_days }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    {% if order.description %}
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-3">Описание</h3>
+                            <p class="text-gray-700">{{ order.description }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Applications -->
+                    {% if order.applications.exists %}
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-3">Отклики репетиторов ({{ order.applications.count }})</h3>
+                            <div class="space-y-3">
+                                {% for application in order.applications.all %}
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+                                                {{ application.tutor.user.first_name.0|default:application.tutor.user.username.0|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="font-medium">{{ application.tutor.user.get_full_name }}</div>
+                                                <div class="text-sm text-gray-500">{{ application.tutor.rating|default:"—" }} ⭐ • {{ application.tutor.experience_years }} лет опыта</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="font-semibold text-blue-600">{{ application.price }} ₽/час</div>
+                                            <div class="text-sm text-gray-500">{{ application.created_at|date:"d.m.Y H:i" }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if application.message %}
+                                        <p class="text-gray-700 text-sm">{{ application.message }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="flex justify-end space-x-2 mt-3">
+                                        <button 
+                                            hx-get="/api/applications/{{ application.id }}/details/"
+                                            hx-target="#application-modal"
+                                            hx-swap="innerHTML"
+                                            class="text-blue-600 hover:text-blue-800 text-sm"
+                                        >
+                                            Подробнее
+                                        </button>
+                                        
+                                        {% if order.status == 'active' %}
+                                            <button 
+                                                hx-post="/api/applications/{{ application.id }}/accept/"
+                                                hx-confirm="Принять этого репетитора?"
+                                                hx-target="#order-modal"
+                                                hx-swap="innerHTML"
+                                                class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                                            >
+                                                Принять
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-8 flex justify-end space-x-4">
+                    <button 
+                        onclick="this.closest('.fixed').remove()"
+                        class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    >
+                        Закрыть
+                    </button>
+                    
+                    {% if order.status == 'active' %}
+                        <button 
+                            hx-post="/api/orders/{{ order.id }}/edit/"
+                            hx-target="#order-modal"
+                            hx-swap="innerHTML"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+                        >
+                            Редактировать
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Modals -->
+<div id="order-modal"></div>
+<div id="applications-modal"></div>
+<div id="application-modal"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-submit form on filter changes
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const selects = form.querySelectorAll('select');
+        
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                // Add small delay to avoid too many requests
+                clearTimeout(window.filterTimeout);
+                window.filterTimeout = setTimeout(() => {
+                    form.dispatchEvent(new Event('submit'));
+                }, 300);
+            });
+        });
+    });
+    
+    // Handle modal actions
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful && event.detail.elt.closest('[id$="-modal"]')) {
+            // Show success notification for order actions
+            const trigger = event.detail.elt;
+            if (trigger.dataset.successMessage) {
+                showNotification(trigger.dataset.successMessage, 'success');
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Страница не найдена - Tutors Platform{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full text-center">
+        <!-- 404 Icon -->
+        <div class="mb-8">
+            <div class="mx-auto h-32 w-32 bg-blue-600 rounded-full flex items-center justify-center mb-6">
+                <span class="text-white text-6xl font-bold">404</span>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                Страница не найдена
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">
+                К сожалению, запрашиваемая страница не существует
+            </p>
+        </div>
+        
+        <!-- Search Box -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                Что вы искали?
+            </h2>
+            <form 
+                hx-get="/api/search/"
+                hx-trigger="submit"
+                hx-target="#search-results"
+                hx-indicator="#search-loading"
+                class="space-y-4"
+            >
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        placeholder="Поиск репетиторов, предметов..."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <button 
+                        type="submit"
+                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                        <span id="search-loading" class="htmx-indicator">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        </span>
+                        <span class="htmx-indicator:hidden">🔍</span>
+                    </button>
+                </div>
+            </form>
+            
+            <div id="search-results"></div>
+        </div>
+        
+        <!-- Quick Links -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                Популярные страницы
+            </h2>
+            <div class="grid grid-cols-1 gap-3">
+                <a href="/" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <span class="text-2xl mr-3">🏠</span>
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Главная страница</div>
+                        <div class="text-sm text-gray-500">Начните с главной</div>
+                    </div>
+                </a>
+                
+                <a href="/orders/create/" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <span class="text-2xl mr-3">🎯</span>
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Найти репетитора</div>
+                        <div class="text-sm text-gray-500">Создать заказ</div>
+                    </div>
+                </a>
+                
+                <a href="/tutors/search/" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <span class="text-2xl mr-3">👨‍🏫</span>
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Поиск репетиторов</div>
+                        <div class="text-sm text-gray-500">Просмотреть всех</div>
+                    </div>
+                </a>
+                
+                <a href="/auth/register/" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <span class="text-2xl mr-3">📝</span>
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Регистрация</div>
+                        <div class="text-sm text-gray-500">Создать аккаунт</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Help Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                Нужна помощь?
+            </h2>
+            <p class="text-gray-600 mb-4">
+                Если вы не можете найти то, что ищете, свяжитесь с нашей поддержкой
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a href="/support/" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    💬 Поддержка
+                </a>
+                <a href="/contact/" class="flex-1 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                    📧 Связаться
+                </a>
+            </div>
+        </div>
+        
+        <!-- Back Button -->
+        <div class="mt-8">
+            <button 
+                onclick="history.back()"
+                class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+            >
+                <span class="mr-2">←</span>
+                Вернуться назад
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Fun Animation -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-10 left-10 animate-bounce">
+        <span class="text-4xl">📚</span>
+    </div>
+    <div class="absolute top-20 right-20 animate-pulse">
+        <span class="text-3xl">🎓</span>
+    </div>
+    <div class="absolute bottom-20 left-20 animate-spin">
+        <span class="text-2xl">⚡</span>
+    </div>
+    <div class="absolute bottom-10 right-10 animate-bounce">
+        <span class="text-3xl">🤖</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add some fun interaction
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add click sound effect to buttons
+        const buttons = document.querySelectorAll('button, a');
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                // You could add a subtle sound effect here
+                console.log('Button clicked:', this.textContent);
+            });
+        });
+        
+        // Add hover effects to search results
+        const searchInput = document.querySelector('input[name="q"]');
+        if (searchInput) {
+            searchInput.addEventListener('focus', function() {
+                this.parentElement.classList.add('ring-2', 'ring-blue-500');
+            });
+            
+            searchInput.addEventListener('blur', function() {
+                this.parentElement.classList.remove('ring-2', 'ring-blue-500');
+            });
+        }
+    });
+    
+    // Handle search results
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful && event.detail.elt.closest('form')) {
+            const results = event.detail.xhr.response;
+            if (results && results.trim()) {
+                showNotification('Результаты поиска загружены!', 'success');
+            }
+        }
+    });
+</script>
+{% endblock %}

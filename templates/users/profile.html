@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль - Tutors Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Profile Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex items-center space-x-6">
+            <div class="flex-shrink-0">
+                <div class="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-3xl">
+                    {{ user.first_name.0|default:user.username.0|upper }}
+                </div>
+            </div>
+            
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    {{ user.get_full_name|default:user.username }}
+                </h1>
+                <p class="text-gray-600 mb-4">{{ user.email }}</p>
+                
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">
+                        📅 Присоединился {{ user.date_joined|date:"d.m.Y" }}
+                    </span>
+                    {% if user.last_login %}
+                        <span class="text-sm text-gray-500">
+                            🔄 Последний вход {{ user.last_login|date:"d.m.Y H:i" }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex-shrink-0">
+                <button 
+                    hx-get="/api/users/profile/edit/"
+                    hx-target="#profile-modal"
+                    hx-swap="innerHTML"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                    ✏️ Редактировать
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="text-3xl text-blue-600 mr-4">📚</div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-900">{{ orders_count|default:0 }}</div>
+                    <div class="text-gray-600">Мои заказы</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="text-3xl text-green-600 mr-4">✅</div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-900">{{ completed_orders|default:0 }}</div>
+                    <div class="text-gray-600">Завершенные</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="text-3xl text-purple-600 mr-4">⭐</div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-900">{{ average_rating|default:"—" }}</div>
+                    <div class="text-gray-600">Средний рейтинг</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Personal Information -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Личная информация</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Имя:</span>
+                    <span class="font-medium">{{ user.first_name|default:"Не указано" }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Фамилия:</span>
+                    <span class="font-medium">{{ user.last_name|default:"Не указано" }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Email:</span>
+                    <span class="font-medium">{{ user.email }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Телефон:</span>
+                    <span class="font-medium">{{ user.phone|default:"Не указано" }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Город:</span>
+                    <span class="font-medium">{{ user.city|default:"Не указано" }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Дата рождения:</span>
+                    <span class="font-medium">{{ user.birth_date|date:"d.m.Y"|default:"Не указано" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preferences -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Предпочтения</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Предпочитаемый формат:</span>
+                    <span class="font-medium">{{ user.preferred_format|default:"Не указано" }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Бюджет (руб/час):</span>
+                    <span class="font-medium">{{ user.budget_min|default:"—" }} - {{ user.budget_max|default:"—" }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Уведомления:</span>
+                    <span class="font-medium">
+                        {% if user.email_notifications %}
+                            ✅ Включены
+                        {% else %}
+                            ❌ Отключены
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Язык интерфейса:</span>
+                    <span class="font-medium">{{ user.language|default:"Русский" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Orders -->
+    <div class="bg-white rounded-lg shadow-md p-6 mt-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">Последние заказы</h2>
+            <a href="/orders/" class="text-blue-600 hover:text-blue-800 font-medium">
+                Все заказы →
+            </a>
+        </div>
+        
+        {% if recent_orders %}
+            <div class="space-y-4">
+                {% for order in recent_orders %}
+                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-900">{{ order.title }}</h3>
+                            <p class="text-sm text-gray-600">{{ order.subject.name }} • {{ order.budget_min }}-{{ order.budget_max }} ₽/час</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ order.created_at|date:"d.m.Y H:i" }}</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-1 text-xs rounded-full 
+                                {% if order.status == 'active' %}bg-green-100 text-green-800
+                                {% elif order.status == 'completed' %}bg-blue-100 text-blue-800
+                                {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                            
+                            <a href="/orders/{{ order.id }}/" class="text-blue-600 hover:text-blue-800 text-sm">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-8">
+                <div class="text-gray-400 text-4xl mb-4">📝</div>
+                <p class="text-gray-600">У вас пока нет заказов</p>
+                <a href="/orders/create/" class="text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block">
+                    Создать первый заказ
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Tutor Profile (if exists) -->
+    {% if user.tutor_profile %}
+    <div class="bg-white rounded-lg shadow-md p-6 mt-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">Профиль репетитора</h2>
+            <a href="/tutor/dashboard/" class="text-blue-600 hover:text-blue-800 font-medium">
+                Кабинет репетитора →
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-2">Предметы</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for subject in user.tutor_profile.subjects.all %}
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                            {{ subject.name }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-2">Статистика</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Рейтинг:</span>
+                        <span class="font-medium">{{ user.tutor_profile.rating|default:"—" }} ⭐</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Опыт:</span>
+                        <span class="font-medium">{{ user.tutor_profile.experience_years }} лет</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Цена:</span>
+                        <span class="font-medium">{{ user.tutor_profile.hourly_rate }} ₽/час</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Profile Edit Modal -->
+<div id="profile-modal"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Handle profile updates
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful && event.detail.elt.closest('#profile-modal')) {
+            // Reload page after successful profile update
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+    });
+</script>
+{% endblock %}

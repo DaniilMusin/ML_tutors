@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация - Tutors Platform{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <!-- Header -->
+        <div class="text-center">
+            <div class="mx-auto h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
+                <span class="text-white text-2xl font-bold">🎓</span>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">
+                Создать аккаунт
+            </h2>
+            <p class="text-gray-600">
+                Присоединяйтесь к платформе репетиторов
+            </p>
+        </div>
+        
+        <!-- Registration Form -->
+        <div class="bg-white rounded-lg shadow-xl p-8">
+            <form 
+                hx-post="/api/auth/register/"
+                hx-trigger="submit"
+                hx-target="#register-form-container"
+                hx-swap="outerHTML"
+                hx-indicator="#register-loading"
+                class="space-y-6"
+            >
+                {% csrf_token %}
+                
+                <div id="register-form-container">
+                    <!-- User Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            Я хочу:
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="relative">
+                                <input 
+                                    type="radio" 
+                                    name="user_type" 
+                                    value="student" 
+                                    checked
+                                    class="sr-only peer"
+                                />
+                                <div class="p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-colors">
+                                    <div class="text-center">
+                                        <div class="text-2xl mb-2">👨‍🎓</div>
+                                        <div class="font-medium text-sm">Найти репетитора</div>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="relative">
+                                <input 
+                                    type="radio" 
+                                    name="user_type" 
+                                    value="tutor" 
+                                    class="sr-only peer"
+                                />
+                                <div class="p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-colors">
+                                    <div class="text-center">
+                                        <div class="text-2xl mb-2">👨‍🏫</div>
+                                        <div class="font-medium text-sm">Стать репетитором</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Name Fields -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">
+                                Имя *
+                            </label>
+                            <input 
+                                type="text" 
+                                name="first_name" 
+                                id="first_name" 
+                                required
+                                autocomplete="given-name"
+                                placeholder="Иван"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">
+                                Фамилия *
+                            </label>
+                            <input 
+                                type="text" 
+                                name="last_name" 
+                                id="last_name" 
+                                required
+                                autocomplete="family-name"
+                                placeholder="Иванов"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                            />
+                        </div>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email *
+                        </label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            id="email" 
+                            required
+                            autocomplete="email"
+                            placeholder="your@email.com"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        />
+                    </div>
+                    
+                    <!-- Phone -->
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                            Телефон
+                        </label>
+                        <input 
+                            type="tel" 
+                            name="phone" 
+                            id="phone" 
+                            autocomplete="tel"
+                            placeholder="+7 (999) 123-45-67"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        />
+                    </div>
+                    
+                    <!-- Password -->
+                    <div>
+                        <label for="password1" class="block text-sm font-medium text-gray-700 mb-2">
+                            Пароль *
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                name="password1" 
+                                id="password1" 
+                                required
+                                autocomplete="new-password"
+                                placeholder="Минимум 8 символов"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors pr-12"
+                            />
+                            <button 
+                                type="button"
+                                onclick="togglePassword('password1')"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                            >
+                                <span id="password1-toggle">👁️</span>
+                            </button>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-500">
+                            Пароль должен содержать минимум 8 символов
+                        </div>
+                    </div>
+                    
+                    <!-- Confirm Password -->
+                    <div>
+                        <label for="password2" class="block text-sm font-medium text-gray-700 mb-2">
+                            Подтвердите пароль *
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                name="password2" 
+                                id="password2" 
+                                required
+                                autocomplete="new-password"
+                                placeholder="Повторите пароль"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors pr-12"
+                            />
+                            <button 
+                                type="button"
+                                onclick="togglePassword('password2')"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                            >
+                                <span id="password2-toggle">👁️</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Terms and Privacy -->
+                    <div class="space-y-3">
+                        <label class="flex items-start">
+                            <input 
+                                type="checkbox" 
+                                name="terms_accepted" 
+                                value="true"
+                                required
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                            />
+                            <span class="ml-2 text-sm text-gray-700">
+                                Я принимаю 
+                                <a href="/terms/" class="text-blue-600 hover:text-blue-800">Условия использования</a>
+                                и
+                                <a href="/privacy/" class="text-blue-600 hover:text-blue-800">Политику конфиденциальности</a>
+                            </span>
+                        </label>
+                        
+                        <label class="flex items-start">
+                            <input 
+                                type="checkbox" 
+                                name="marketing_emails" 
+                                value="true"
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                            />
+                            <span class="ml-2 text-sm text-gray-700">
+                                Получать уведомления о новых возможностях и предложениях
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div>
+                        <button 
+                            type="submit"
+                            class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium"
+                        >
+                            <span id="register-loading" class="htmx-indicator">
+                                <div class="flex items-center justify-center">
+                                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                    Регистрация...
+                                </div>
+                            </span>
+                            <span class="htmx-indicator:hidden">
+                                Создать аккаунт
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Social Registration -->
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Или зарегистрируйтесь через</span>
+                    </div>
+                </div>
+                
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <button 
+                        hx-post="/api/auth/google/"
+                        hx-trigger="click"
+                        class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+                    >
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        <span class="ml-2">Google</span>
+                    </button>
+                    
+                    <button 
+                        hx-post="/api/auth/vk/"
+                        hx-trigger="click"
+                        class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+                    >
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#4C75A3">
+                            <path d="M15.07 2H8.93C3.33 2 2 3.33 2 8.93v6.14C2 20.67 3.33 22 8.93 22h6.14c5.6 0 6.93-1.33 6.93-6.93V8.93C22 3.33 20.67 2 15.07 2zm3.48 14.27h-1.46c-.55 0-.71-.44-1.65-1.4-.8-.8-1.16-.92-1.36-.92-.31 0-.4.1-.4.66v1.28c0 .47-.14.68-1.24.68-1.82 0-3.74-1.12-5.14-3.21C4.7 10.21 4.5 9.4 4.5 8.9c0-.24.1-.47.31-.47h1.47c.23 0 .34.11.43.38.7 2.19 1.86 4.11 2.33 4.11.18 0 .26-.09.26-.69V7.61c-.06-.58-.35-.77-.35-1.03 0-.12.1-.22.27-.22h2.26c.24 0 .33.11.33.69v3.87c0 .38.18.5.18.66 0 .15-.13.22-.23.22z"/>
+                        </svg>
+                        <span class="ml-2">VK</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Login Link -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    Уже есть аккаунт? 
+                    <a href="/auth/login/" class="font-medium text-blue-600 hover:text-blue-800">
+                        Войти
+                    </a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Benefits -->
+        <div class="text-center">
+            <div class="grid grid-cols-3 gap-4 text-xs text-gray-500">
+                <div>
+                    <div class="text-lg mb-1">🤖</div>
+                    <div>ИИ-подбор</div>
+                </div>
+                <div>
+                    <div class="text-lg mb-1">⚡</div>
+                    <div>Быстро</div>
+                </div>
+                <div>
+                    <div class="text-lg mb-1">🛡️</div>
+                    <div>Безопасно</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function togglePassword(fieldId) {
+        const passwordInput = document.getElementById(fieldId);
+        const toggleButton = document.getElementById(fieldId + '-toggle');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleButton.textContent = '🙈';
+        } else {
+            passwordInput.type = 'password';
+            toggleButton.textContent = '👁️';
+        }
+    }
+    
+    // Password strength indicator
+    document.getElementById('password1').addEventListener('input', function() {
+        const password = this.value;
+        const strength = calculatePasswordStrength(password);
+        updatePasswordStrengthIndicator(strength);
+    });
+    
+    function calculatePasswordStrength(password) {
+        let score = 0;
+        
+        if (password.length >= 8) score++;
+        if (/[a-z]/.test(password)) score++;
+        if (/[A-Z]/.test(password)) score++;
+        if (/[0-9]/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+        
+        return score;
+    }
+    
+    function updatePasswordStrengthIndicator(strength) {
+        const indicator = document.getElementById('password-strength');
+        if (!indicator) return;
+        
+        const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'];
+        const texts = ['Очень слабый', 'Слабый', 'Средний', 'Хороший', 'Отличный'];
+        
+        indicator.className = `h-2 rounded transition-all ${colors[strength - 1] || 'bg-gray-200'}`;
+        indicator.style.width = `${(strength / 5) * 100}%`;
+        
+        const textElement = document.getElementById('password-strength-text');
+        if (textElement) {
+            textElement.textContent = texts[strength - 1] || '';
+        }
+    }
+    
+    // Handle registration success
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful && event.detail.elt.closest('#register-form-container')) {
+            // Redirect on successful registration
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        }
+    });
+    
+    // Auto-focus first name field
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstNameInput = document.getElementById('first_name');
+        if (firstNameInput) {
+            firstNameInput.focus();
+        }
+    });
+</script>
+{% endblock %}
