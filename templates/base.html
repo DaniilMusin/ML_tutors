@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +7,37 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-in',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'bounce-in': 'bounceIn 0.6s ease-out',
+                    }
+                }
+            }
+        }
+    </script>
     
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     
     <!-- Alpine.js for interactivity -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
     <!-- PWA Meta -->
     <link rel="manifest" href="/static/manifest.json">
@@ -31,12 +56,21 @@
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
+        .dark ::-webkit-scrollbar-track {
+            background: #374151;
+        }
         ::-webkit-scrollbar-thumb {
             background: #888;
             border-radius: 3px;
         }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #6b7280;
+        }
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
         }
         
         /* Loading state */
@@ -50,51 +84,154 @@
             animation: fadeIn 0.3s ease-in;
         }
         
+        .slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { opacity: 1; transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .dark .glass {
+            background: rgba(17, 24, 39, 0.25);
+            border: 1px solid rgba(75, 85, 99, 0.18);
+        }
+        
+        /* Gradient backgrounds */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-200">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b">
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="/" class="text-xl font-bold text-blue-600">
-                        🎓 Tutors Platform
+                    <a href="/" class="flex items-center space-x-2 text-xl font-bold gradient-text">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-sm font-bold">🎓</span>
+                        </div>
+                        <span>Tutors Platform</span>
                     </a>
                 </div>
                 
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/tutors/" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        Репетиторы
+                    </a>
+                    <a href="/orders/" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        Заказы
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="/orders/create/" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                            Создать заказ
+                        </a>
+                    {% endif %}
+                </div>
+                
                 <div class="flex items-center space-x-4">
+                    <!-- Dark mode toggle -->
+                    <button 
+                        @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)"
+                        class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        title="Переключить темную тему"
+                    >
+                        <i data-lucide="moon" x-show="!darkMode" class="w-5 h-5"></i>
+                        <i data-lucide="sun" x-show="darkMode" class="w-5 h-5"></i>
+                    </button>
+                    
                     {% if user.is_authenticated %}
                         <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="flex items-center text-sm bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <button @click="open = !open" class="flex items-center text-sm bg-white dark:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
                                 <span class="sr-only">Open user menu</span>
-                                <div class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+                                <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
                                     {{ user.first_name.0|default:user.username.0|upper }}
                                 </div>
-                                <span class="ml-2 text-gray-700">{{ user.get_full_name|default:user.username }}</span>
+                                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ user.get_full_name|default:user.username }}</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 ml-1"></i>
                             </button>
                             
-                            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5">
                                 <div class="py-1">
-                                    <a href="/profile/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Профиль</a>
-                                    <a href="/orders/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Мои заказы</a>
+                                    <a href="/profile/" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i data-lucide="user" class="w-4 h-4 mr-3"></i>
+                                        Профиль
+                                    </a>
+                                    <a href="/orders/" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i data-lucide="list" class="w-4 h-4 mr-3"></i>
+                                        Мои заказы
+                                    </a>
                                     {% if user.tutor_profile %}
-                                        <a href="/tutor/dashboard/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Кабинет репетитора</a>
+                                        <a href="/tutor/dashboard/" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                            <i data-lucide="graduation-cap" class="w-4 h-4 mr-3"></i>
+                                            Кабинет репетитора
+                                        </a>
                                     {% endif %}
-                                    <hr class="my-1">
-                                    <a href="/logout/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Выйти</a>
+                                    <hr class="my-1 border-gray-200 dark:border-gray-600">
+                                    <a href="/logout/" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i data-lucide="log-out" class="w-4 h-4 mr-3"></i>
+                                        Выйти
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     {% else %}
-                        <a href="/login/" class="text-gray-700 hover:text-blue-600">Войти</a>
-                        <a href="/register/" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Регистрация</a>
+                        <a href="/login/" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Войти</a>
+                        <a href="/register/" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Регистрация</a>
                     {% endif %}
                 </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button @click="$dispatch('toggle-mobile-menu')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div x-data="{ open: false }" @toggle-mobile-menu.window="open = !open" x-show="open" x-transition class="md:hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                <a href="/tutors/" class="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Репетиторы</a>
+                <a href="/orders/" class="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Заказы</a>
+                {% if user.is_authenticated %}
+                    <a href="/orders/create/" class="block px-3 py-2 bg-blue-600 text-white rounded-md">Создать заказ</a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -105,11 +242,74 @@
         {% endblock %}
     </main>
 
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-16">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-sm font-bold">🎓</span>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">Tutors Platform</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">
+                        Современная платформа для подбора репетиторов с использованием искусственного интеллекта. 
+                        Находите лучших преподавателей для достижения ваших образовательных целей.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white tracking-wider uppercase mb-4">Сервисы</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/tutors/" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Найти репетитора</a></li>
+                        <li><a href="/orders/create/" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Создать заказ</a></li>
+                        <li><a href="/tutors/register/" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Стать репетитором</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white tracking-wider uppercase mb-4">Поддержка</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/help/" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Помощь</a></li>
+                        <li><a href="/contact/" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Контакты</a></li>
+                        <li><a href="/privacy/" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Конфиденциальность</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+                <p class="text-center text-gray-400 dark:text-gray-500">
+                    © 2024 Tutors Platform. Все права защищены.
+                </p>
+            </div>
+        </div>
+    </footer>
+
     <!-- Notifications -->
     <div id="notifications" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
     <!-- Modals container -->
     <div id="modals"></div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center space-x-3">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span class="text-gray-700 dark:text-gray-300">Загрузка...</span>
+        </div>
+    </div>
 
     <!-- WebSocket connection for real-time updates -->
     {% if user.is_authenticated %}
@@ -141,6 +341,9 @@
 
     <!-- Utility functions -->
     <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
         // Show notification
         function showNotification(message, type = 'info') {
             const colors = {
@@ -150,18 +353,29 @@
                 error: 'bg-red-500'
             };
             
+            const icons = {
+                info: 'info',
+                success: 'check-circle',
+                warning: 'alert-triangle',
+                error: 'x-circle'
+            };
+            
             const notification = document.createElement('div');
-            notification.className = `${colors[type]} text-white px-4 py-3 rounded-md shadow-lg fade-in`;
+            notification.className = `${colors[type]} text-white px-4 py-3 rounded-md shadow-lg bounce-in max-w-sm`;
             notification.innerHTML = `
                 <div class="flex items-center justify-between">
-                    <span>${message}</span>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="${icons[type]}" class="w-5 h-5"></i>
+                        <span>${message}</span>
+                    </div>
                     <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
-                        ✕
+                        <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
             `;
             
             document.getElementById('notifications').appendChild(notification);
+            lucide.createIcons();
             
             // Auto remove after 5 seconds
             setTimeout(() => {
@@ -171,17 +385,61 @@
             }, 5000);
         }
         
+        // Show loading overlay
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+        
         // HTMX event handlers
-        document.addEventListener('htmx:responseError', function(event) {
-            showNotification('Произошла ошибка. Попробуйте еще раз.', 'error');
+        document.addEventListener('htmx:beforeRequest', function(event) {
+            showLoading();
         });
         
         document.addEventListener('htmx:afterRequest', function(event) {
+            hideLoading();
+            
             if (event.detail.successful) {
                 // Handle successful requests
                 const trigger = event.detail.elt;
                 if (trigger.dataset.successMessage) {
                     showNotification(trigger.dataset.successMessage, 'success');
+                }
+            }
+        });
+        
+        document.addEventListener('htmx:responseError', function(event) {
+            hideLoading();
+            showNotification('Произошла ошибка. Попробуйте еще раз.', 'error');
+        });
+        
+        // Smooth scroll to top
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Back to top button
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('back-to-top');
+            if (window.scrollY > 300) {
+                if (!backToTop) {
+                    const button = document.createElement('button');
+                    button.id = 'back-to-top';
+                    button.className = 'fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-40';
+                    button.innerHTML = '<i data-lucide="arrow-up" class="w-5 h-5"></i>';
+                    button.onclick = scrollToTop;
+                    document.body.appendChild(button);
+                    lucide.createIcons();
+                }
+            } else {
+                if (backToTop) {
+                    backToTop.remove();
                 }
             }
         });
@@ -205,10 +463,11 @@
                                     
                                     // Add update button
                                     const updateBtn = document.createElement('button');
-                                    updateBtn.className = 'fixed bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-                                    updateBtn.textContent = 'Обновить';
+                                    updateBtn.className = 'fixed bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg z-50 flex items-center space-x-2';
+                                    updateBtn.innerHTML = '<i data-lucide="refresh-cw" class="w-4 h-4"></i><span>Обновить</span>';
                                     updateBtn.onclick = () => window.location.reload();
                                     document.body.appendChild(updateBtn);
+                                    lucide.createIcons();
                                 }
                             });
                         });
@@ -228,8 +487,8 @@
             
             // Show install button
             const installBtn = document.createElement('button');
-            installBtn.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-            installBtn.innerHTML = '📱 Установить приложение';
+            installBtn.className = 'fixed bottom-4 right-16 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50 flex items-center space-x-2';
+            installBtn.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i><span>Установить</span>';
             installBtn.onclick = async () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
@@ -240,6 +499,7 @@
                 }
             };
             document.body.appendChild(installBtn);
+            lucide.createIcons();
             
             // Auto-hide after 10 seconds
             setTimeout(() => {

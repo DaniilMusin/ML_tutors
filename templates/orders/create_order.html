@@ -3,244 +3,468 @@
 {% block title %}Создать заказ - Tutors Platform{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6">Создать заказ на репетитора</h1>
-        
-        <form 
-            hx-post="/api/orders/"
-            hx-trigger="submit"
-            hx-target="#order-form-container"
-            hx-swap="outerHTML"
-            hx-indicator="#loading"
-            data-success-message="Заказ успешно создан!"
-            class="space-y-6"
-        >
-            {% csrf_token %}
-            
-            <div id="order-form-container">
-                <!-- Subject Selection -->
-                <div>
-                    <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
-                        Предмет *
-                    </label>
-                    <select 
-                        name="subject" 
-                        id="subject" 
-                        required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        hx-get="/api/subjects/search/"
-                        hx-trigger="change"
-                        hx-target="#subject-description"
-                    >
-                        <option value="">Выберите предмет</option>
-                        {% for subject in subjects %}
-                            <option value="{{ subject.id }}">{{ subject.name }}</option>
-                        {% endfor %}
-                    </select>
-                    <div id="subject-description" class="mt-2 text-sm text-gray-500"></div>
-                </div>
-
-                <!-- Title -->
-                <div>
-                    <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-                        Заголовок заказа *
-                    </label>
-                    <input 
-                        type="text" 
-                        name="title" 
-                        id="title" 
-                        required
-                        maxlength="200"
-                        placeholder="Например: Нужна помощь с изучением производных"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                        Описание задачи *
-                    </label>
-                    <textarea 
-                        name="description" 
-                        id="description" 
-                        rows="4" 
-                        required
-                        placeholder="Подробно опишите, с чем нужна помощь, ваш уровень подготовки, цели обучения..."
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    ></textarea>
-                    <p class="mt-1 text-sm text-gray-500">Чем подробнее описание, тем лучше репетиторы смогут оценить задачу</p>
-                </div>
-
-                <!-- Budget -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="budget_min" class="block text-sm font-medium text-gray-700 mb-2">
-                            Бюджет от (руб/час) *
-                        </label>
-                        <input 
-                            type="number" 
-                            name="budget_min" 
-                            id="budget_min" 
-                            required
-                            min="0"
-                            step="50"
-                            placeholder="1000"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </div>
-                    <div>
-                        <label for="budget_max" class="block text-sm font-medium text-gray-700 mb-2">
-                            Бюджет до (руб/час) *
-                        </label>
-                        <input 
-                            type="number" 
-                            name="budget_max" 
-                            id="budget_max" 
-                            required
-                            min="0"
-                            step="50"
-                            placeholder="2000"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </div>
-                </div>
-
-                <!-- Format -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Формат занятий *
-                    </label>
-                    <div class="space-y-2">
-                        <label class="flex items-center">
-                            <input 
-                                type="checkbox" 
-                                name="format_online" 
-                                value="true"
-                                checked
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <span class="ml-2 text-sm text-gray-900">Онлайн</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input 
-                                type="checkbox" 
-                                name="format_offline" 
-                                value="true"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                hx-trigger="change"
-                                hx-target="#location-fields"
-                                hx-swap="innerHTML"
-                                hx-get="/fragments/location_fields/"
-                            />
-                            <span class="ml-2 text-sm text-gray-900">Очно</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Location (conditionally shown) -->
-                <div id="location-fields"></div>
-
-                <!-- Schedule -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Желаемое расписание
-                    </label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <select 
-                                name="schedule_days" 
-                                multiple
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                <option value="monday">Понедельник</option>
-                                <option value="tuesday">Вторник</option>
-                                <option value="wednesday">Среда</option>
-                                <option value="thursday">Четверг</option>
-                                <option value="friday">Пятница</option>
-                                <option value="saturday">Суббота</option>
-                                <option value="sunday">Воскресенье</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select 
-                                name="schedule_time"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                <option value="">Время</option>
-                                <option value="morning">Утром (9:00-12:00)</option>
-                                <option value="afternoon">Днем (12:00-17:00)</option>
-                                <option value="evening">Вечером (17:00-21:00)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI Matching Option -->
-                <div class="bg-blue-50 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <input 
-                            type="checkbox" 
-                            id="use_ai_matching" 
-                            name="use_ai_matching"
-                            value="true"
-                            checked
-                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label for="use_ai_matching" class="ml-2 text-sm font-medium text-gray-900">
-                            🤖 Использовать ИИ-подбор репетиторов
-                        </label>
-                    </div>
-                    <p class="mt-1 text-sm text-gray-600">
-                        ИИ автоматически найдет наиболее подходящих репетиторов на основе вашего запроса
-                    </p>
-                </div>
+<div class="max-w-4xl mx-auto" x-data="{ 
+    currentStep: 1, 
+    totalSteps: 4,
+    formData: {
+        subject: '',
+        title: '',
+        description: '',
+        budget_min: '',
+        budget_max: '',
+        format_online: true,
+        format_offline: false,
+        use_ai_matching: true
+    }
+}">
+    <!-- Progress Bar -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Создать заказ на репетитора</h1>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                Шаг <span x-text="currentStep"></span> из <span x-text="totalSteps"></span>
             </div>
+        </div>
+        
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                 :style="`width: ${(currentStep / totalSteps) * 100}%`"></div>
+        </div>
+        
+        <div class="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <span>Предмет</span>
+            <span>Детали</span>
+            <span>Бюджет</span>
+            <span>Формат</span>
+        </div>
+    </div>
 
-            <!-- Submit Button -->
-            <div class="flex items-center justify-between pt-6">
-                <button 
-                    type="button"
-                    onclick="history.back()"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                    Отмена
-                </button>
-                
-                <div class="flex items-center space-x-4">
-                    <div id="loading" class="htmx-indicator">
-                        <div class="flex items-center text-sm text-gray-500">
-                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Создание заказа...
+    <form 
+        hx-post="/api/orders/"
+        hx-trigger="submit"
+        hx-target="#order-form-container"
+        hx-swap="outerHTML"
+        hx-indicator="#loading"
+        data-success-message="Заказ успешно создан!"
+        class="space-y-8"
+    >
+        {% csrf_token %}
+        
+        <div id="order-form-container">
+            <!-- Step 1: Subject Selection -->
+            <div x-show="currentStep === 1" class="slide-up">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-4">
+                            <i data-lucide="book-open" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Выберите предмет</h2>
+                            <p class="text-gray-600 dark:text-gray-400">Укажите предмет, по которому нужна помощь</p>
                         </div>
                     </div>
                     
-                    <button 
-                        type="submit"
-                        class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Создать заказ
-                    </button>
+                    <div class="space-y-4">
+                        <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Предмет *
+                        </label>
+                        <select 
+                            name="subject" 
+                            id="subject" 
+                            required
+                            x-model="formData.subject"
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            hx-get="/api/subjects/search/"
+                            hx-trigger="change"
+                            hx-target="#subject-description"
+                        >
+                            <option value="">Выберите предмет</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div id="subject-description" class="mt-2 text-sm text-gray-500 dark:text-gray-400"></div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <div></div>
+                        <button 
+                            type="button"
+                            @click="currentStep = 2"
+                            :disabled="!formData.subject"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                        >
+                            <span>Далее</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </form>
-    </div>
+
+            <!-- Step 2: Order Details -->
+            <div x-show="currentStep === 2" class="slide-up">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-4">
+                            <i data-lucide="file-text" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Детали заказа</h2>
+                            <p class="text-gray-600 dark:text-gray-400">Опишите вашу задачу и цели обучения</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Заголовок заказа *
+                            </label>
+                            <input 
+                                type="text" 
+                                name="title" 
+                                id="title" 
+                                required
+                                maxlength="200"
+                                x-model="formData.title"
+                                placeholder="Например: Нужна помощь с изучением производных"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            />
+                            <div class="flex justify-between mt-1">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Чем конкретнее заголовок, тем лучше</p>
+                                <span class="text-sm text-gray-400" x-text="formData.title.length + '/200'"></span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Описание задачи *
+                            </label>
+                            <textarea 
+                                name="description" 
+                                id="description" 
+                                rows="6" 
+                                required
+                                x-model="formData.description"
+                                placeholder="Подробно опишите, с чем нужна помощь, ваш уровень подготовки, цели обучения, желаемые результаты..."
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                            ></textarea>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Чем подробнее описание, тем лучше репетиторы смогут оценить задачу</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <button 
+                            type="button"
+                            @click="currentStep = 1"
+                            class="px-6 py-3 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center space-x-2"
+                        >
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            <span>Назад</span>
+                        </button>
+                        
+                        <button 
+                            type="button"
+                            @click="currentStep = 3"
+                            :disabled="!formData.title || !formData.description"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                        >
+                            <span>Далее</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Budget -->
+            <div x-show="currentStep === 3" class="slide-up">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mr-4">
+                            <i data-lucide="dollar-sign" class="w-5 h-5 text-yellow-600 dark:text-yellow-400"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Бюджет</h2>
+                            <p class="text-gray-600 dark:text-gray-400">Укажите диапазон стоимости за час занятий</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="budget_min" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Бюджет от (руб/час) *
+                                </label>
+                                <div class="relative">
+                                    <input 
+                                        type="number" 
+                                        name="budget_min" 
+                                        id="budget_min" 
+                                        required
+                                        min="0"
+                                        step="50"
+                                        x-model="formData.budget_min"
+                                        placeholder="1000"
+                                        class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    />
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 dark:text-gray-400">₽</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="budget_max" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Бюджет до (руб/час) *
+                                </label>
+                                <div class="relative">
+                                    <input 
+                                        type="number" 
+                                        name="budget_max" 
+                                        id="budget_max" 
+                                        required
+                                        min="0"
+                                        step="50"
+                                        x-model="formData.budget_max"
+                                        placeholder="2000"
+                                        class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    />
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 dark:text-gray-400">₽</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Budget validation message -->
+                        <div x-show="formData.budget_min && formData.budget_max && parseInt(formData.budget_max) < parseInt(formData.budget_min)" 
+                             class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600 dark:text-red-400 mr-2"></i>
+                                <span class="text-red-800 dark:text-red-200">Максимальный бюджет должен быть больше минимального</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Budget suggestions -->
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                            <h4 class="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 Рекомендации по бюджету:</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                <div class="bg-white dark:bg-gray-800 rounded p-3">
+                                    <div class="font-medium text-gray-900 dark:text-white">Студенты</div>
+                                    <div class="text-gray-600 dark:text-gray-400">500-1500 ₽/час</div>
+                                </div>
+                                <div class="bg-white dark:bg-gray-800 rounded p-3">
+                                    <div class="font-medium text-gray-900 dark:text-white">Опытные преподаватели</div>
+                                    <div class="text-gray-600 dark:text-gray-400">1500-3000 ₽/час</div>
+                                </div>
+                                <div class="bg-white dark:bg-gray-800 rounded p-3">
+                                    <div class="font-medium text-gray-900 dark:text-white">Эксперты</div>
+                                    <div class="text-gray-600 dark:text-gray-400">3000+ ₽/час</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <button 
+                            type="button"
+                            @click="currentStep = 2"
+                            class="px-6 py-3 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center space-x-2"
+                        >
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            <span>Назад</span>
+                        </button>
+                        
+                        <button 
+                            type="button"
+                            @click="currentStep = 4"
+                            :disabled="!formData.budget_min || !formData.budget_max || parseInt(formData.budget_max) < parseInt(formData.budget_min)"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                        >
+                            <span>Далее</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Format and Final -->
+            <div x-show="currentStep === 4" class="slide-up">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mr-4">
+                            <i data-lucide="settings" class="w-5 h-5 text-purple-600 dark:text-purple-400"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Формат и настройки</h2>
+                            <p class="text-gray-600 dark:text-gray-400">Выберите формат занятий и дополнительные опции</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- Format -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                Формат занятий *
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label class="relative flex items-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <input 
+                                        type="checkbox" 
+                                        name="format_online" 
+                                        value="true"
+                                        x-model="formData.format_online"
+                                        checked
+                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    />
+                                    <div class="ml-3">
+                                        <div class="flex items-center">
+                                            <i data-lucide="video" class="w-5 h-5 text-blue-600 mr-2"></i>
+                                            <span class="font-medium text-gray-900 dark:text-white">Онлайн</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Занятия по видеосвязи</p>
+                                    </div>
+                                </label>
+                                
+                                <label class="relative flex items-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <input 
+                                        type="checkbox" 
+                                        name="format_offline" 
+                                        value="true"
+                                        x-model="formData.format_offline"
+                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        hx-trigger="change"
+                                        hx-target="#location-fields"
+                                        hx-swap="innerHTML"
+                                        hx-get="/fragments/location_fields/"
+                                    />
+                                    <div class="ml-3">
+                                        <div class="flex items-center">
+                                            <i data-lucide="map-pin" class="w-5 h-5 text-green-600 mr-2"></i>
+                                            <span class="font-medium text-gray-900 dark:text-white">Очно</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Личные встречи</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Location (conditionally shown) -->
+                        <div id="location-fields"></div>
+
+                        <!-- Schedule -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                Желаемое расписание
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">Дни недели</label>
+                                    <select 
+                                        name="schedule_days" 
+                                        multiple
+                                        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    >
+                                        <option value="monday">Понедельник</option>
+                                        <option value="tuesday">Вторник</option>
+                                        <option value="wednesday">Среда</option>
+                                        <option value="thursday">Четверг</option>
+                                        <option value="friday">Пятница</option>
+                                        <option value="saturday">Суббота</option>
+                                        <option value="sunday">Воскресенье</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">Время</label>
+                                    <select 
+                                        name="schedule_time"
+                                        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    >
+                                        <option value="">Любое время</option>
+                                        <option value="morning">Утром (9:00-12:00)</option>
+                                        <option value="afternoon">Днем (12:00-17:00)</option>
+                                        <option value="evening">Вечером (17:00-21:00)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Matching Option -->
+                        <div class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                        <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="flex items-center">
+                                        <input 
+                                            type="checkbox" 
+                                            id="use_ai_matching" 
+                                            name="use_ai_matching"
+                                            value="true"
+                                            x-model="formData.use_ai_matching"
+                                            checked
+                                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        />
+                                        <label for="use_ai_matching" class="ml-2 text-lg font-medium text-gray-900 dark:text-white">
+                                            Использовать ИИ-подбор репетиторов
+                                        </label>
+                                    </div>
+                                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        ИИ автоматически найдет наиболее подходящих репетиторов на основе вашего запроса, 
+                                        учитывая опыт, рейтинг и специализацию
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <button 
+                            type="button"
+                            @click="currentStep = 3"
+                            class="px-6 py-3 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center space-x-2"
+                        >
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            <span>Назад</span>
+                        </button>
+                        
+                        <div class="flex items-center space-x-4">
+                            <div id="loading" class="htmx-indicator">
+                                <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                                    Создание заказа...
+                                </div>
+                            </div>
+                            
+                            <button 
+                                type="submit"
+                                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center space-x-2"
+                            >
+                                <i data-lucide="check" class="w-4 h-4"></i>
+                                <span>Создать заказ</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
 
 <!-- AI Matching Results Modal -->
-<div id="ai-matching-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-96 overflow-hidden">
+<div id="ai-matching-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full mx-4 max-h-96 overflow-hidden">
         <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">🤖 ИИ нашел подходящих репетиторов</h3>
-                <button onclick="closeAIModal()" class="text-gray-400 hover:text-gray-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4">
+                        <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">ИИ нашел подходящих репетиторов</h3>
+                </div>
+                <button onclick="closeAIModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
             <div id="ai-results-container" class="space-y-4 max-h-80 overflow-y-auto">
@@ -253,6 +477,9 @@
 
 {% block scripts %}
 <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
     // Form validation
     document.getElementById('budget_max').addEventListener('input', function() {
         const minBudget = parseInt(document.getElementById('budget_min').value);
@@ -312,44 +539,65 @@
         const container = document.getElementById('ai-results-container');
         
         if (!matches || matches.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-center py-8">ИИ не нашел подходящих репетиторов. Попробуйте расширить критерии поиска.</p>';
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <i data-lucide="search" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                    <p class="text-gray-500 dark:text-gray-400">ИИ не нашел подходящих репетиторов. Попробуйте расширить критерии поиска.</p>
+                </div>
+            `;
+            lucide.createIcons();
             return;
         }
 
         container.innerHTML = matches.map(match => `
-            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
-                        <div class="flex items-center space-x-2">
-                            <h4 class="font-medium text-gray-900">${match.profile.name}</h4>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+                                ${match.profile.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">${match.profile.name}</h4>
+                                <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                                    <span class="flex items-center">
+                                        <i data-lucide="star" class="w-4 h-4 text-yellow-500 mr-1"></i>
+                                        ${match.profile.rating}/5
+                                    </span>
+                                    <span class="flex items-center">
+                                        <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                                        ${match.profile.experience_years} лет опыта
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                 ${Math.round(match.score * 100)}% совпадение
                             </span>
                         </div>
-                        <div class="mt-1 flex items-center space-x-4 text-sm text-gray-500">
-                            <span>⭐ ${match.profile.rating}/5</span>
-                            <span>📚 ${match.profile.experience_years} лет опыта</span>
-                        </div>
-                        <div class="mt-2">
-                            <p class="text-sm text-gray-600">
+                        <div class="mt-3">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
                                 <strong>Почему подходит:</strong> ${match.reasons.join(', ')}
                             </p>
                         </div>
                     </div>
-                    <div class="flex flex-col items-end space-y-2">
+                    <div class="flex flex-col items-end space-y-3">
                         <button 
                             onclick="inviteTutor(${match.tutor_id}, ${orderId})"
-                            class="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                            class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center space-x-2"
                         >
-                            Пригласить
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            <span>Пригласить</span>
                         </button>
-                        <a href="/tutors/${match.tutor_id}/" class="text-blue-600 hover:text-blue-700 text-sm">
-                            Профиль
+                        <a href="/tutors/${match.tutor_id}/" class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm flex items-center space-x-1">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                            <span>Профиль</span>
                         </a>
                     </div>
                 </div>
             </div>
         `).join('');
+        
+        lucide.createIcons();
     }
 
     // Close AI modal

@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Tutors Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div class="absolute inset-0 bg-grid-pattern opacity-5"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="space-y-8">
+                <div class="space-y-4">
+                    <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
+                        Найдите идеального 
+                        <span class="gradient-text">репетитора</span>
+                    </h1>
+                    <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+                        Современная платформа с ИИ-подбором поможет найти лучшего преподавателя 
+                        для достижения ваших образовательных целей
+                    </p>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    {% if user.is_authenticated %}
+                        <a href="/orders/create/" class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg">
+                            <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
+                            Создать заказ
+                        </a>
+                    {% else %}
+                        <a href="/register/" class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg">
+                            <i data-lucide="user-plus" class="w-5 h-5 mr-2"></i>
+                            Начать поиск
+                        </a>
+                    {% endif %}
+                    <a href="/tutors/" class="inline-flex items-center justify-center px-8 py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                        <i data-lucide="search" class="w-5 h-5 mr-2"></i>
+                        Смотреть репетиторов
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-8 text-sm text-gray-500 dark:text-gray-400">
+                    <div class="flex items-center">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mr-2"></i>
+                        <span>Бесплатная регистрация</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i data-lucide="shield" class="w-4 h-4 text-blue-500 mr-2"></i>
+                        <span>Безопасные платежи</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i data-lucide="zap" class="w-4 h-4 text-yellow-500 mr-2"></i>
+                        <span>ИИ-подбор</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="relative">
+                <div class="relative z-10">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Популярные предметы</h3>
+                            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <i data-lucide="trending-up" class="w-4 h-4 text-white"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-blue-600 dark:text-blue-400 font-semibold">М</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-white">Математика</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">150+ репетиторов</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">от 800₽/час</div>
+                                    <div class="text-xs text-green-600 dark:text-green-400">⭐ 4.8</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-green-600 dark:text-green-400 font-semibold">А</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-white">Английский</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">120+ репетиторов</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">от 1000₽/час</div>
+                                    <div class="text-xs text-green-600 dark:text-green-400">⭐ 4.9</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-purple-600 dark:text-purple-400 font-semibold">Ф</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-white">Физика</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">80+ репетиторов</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">от 1200₽/час</div>
+                                    <div class="text-xs text-green-600 dark:text-green-400">⭐ 4.7</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <a href="/tutors/" class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                <span>Смотреть все предметы</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Decorative elements -->
+                <div class="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-20 animate-pulse"></div>
+                <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-20 animate-pulse delay-1000"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-16 bg-white dark:bg-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Платформа в цифрах
+            </h2>
+            <p class="text-lg text-gray-600 dark:text-gray-400">
+                Тысячи студентов уже нашли своих идеальных репетиторов
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="users" class="w-8 h-8 text-white"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">5,000+</div>
+                <div class="text-gray-600 dark:text-gray-400">Студентов</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="graduation-cap" class="w-8 h-8 text-white"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">800+</div>
+                <div class="text-gray-600 dark:text-gray-400">Репетиторов</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="book-open" class="w-8 h-8 text-white"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">50+</div>
+                <div class="text-gray-600 dark:text-gray-400">Предметов</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="star" class="w-8 h-8 text-white"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">4.8</div>
+                <div class="text-gray-600 dark:text-gray-400">Средний рейтинг</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-16 bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Почему выбирают нас
+            </h2>
+            <p class="text-lg text-gray-600 dark:text-gray-400">
+                Инновационные технологии и проверенные методы обучения
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mb-6">
+                    <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">ИИ-подбор репетиторов</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Наша система искусственного интеллекта анализирует ваш запрос и находит наиболее подходящих репетиторов на основе опыта, рейтинга и специализации.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+                <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg flex items-center justify-center mb-6">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Проверенные преподаватели</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Все репетиторы проходят тщательную проверку: верификация документов, проверка опыта и отзывов от предыдущих учеников.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+                <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mb-6">
+                    <i data-lucide="credit-card" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Безопасные платежи</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Оплата происходит только после проведения занятия. Все платежи защищены современными технологиями шифрования.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+                <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center mb-6">
+                    <i data-lucide="video" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Онлайн и очно</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Выбирайте удобный формат занятий: онлайн через видеосвязь или личные встречи с репетитором.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+                <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-600 rounded-lg flex items-center justify-center mb-6">
+                    <i data-lucide="clock" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Гибкое расписание</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Занимайтесь в удобное время. Репетиторы работают утром, днем и вечером, включая выходные дни.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+                <div class="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mb-6">
+                    <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Поддержка 24/7</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Наша команда поддержки готова помочь в любое время. Быстрые ответы на все ваши вопросы.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it works Section -->
+<section class="py-16 bg-white dark:bg-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Как это работает
+            </h2>
+            <p class="text-lg text-gray-600 dark:text-gray-400">
+                Всего 3 простых шага до начала занятий
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="relative">
+                    <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
+                        1
+                    </div>
+                    {% if not user.is_authenticated %}
+                        <div class="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <i data-lucide="check" class="w-4 h-4 text-white"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Создайте заказ</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Опишите предмет, цели обучения и желаемый бюджет. Наша ИИ-система найдет подходящих репетиторов.
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
+                    2
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Выберите репетитора</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Просмотрите профили репетиторов, их опыт, отзывы и рейтинги. Выберите того, кто подходит именно вам.
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
+                    3
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Начните заниматься</h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Согласуйте расписание и формат занятий. Оплатите урок и приступайте к обучению!
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">
+            Готовы начать обучение?
+        </h2>
+        <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Присоединяйтесь к тысячам студентов, которые уже достигли своих образовательных целей с помощью наших репетиторов
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            {% if user.is_authenticated %}
+                <a href="/orders/create/" class="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
+                    <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
+                    Создать заказ
+                </a>
+            {% else %}
+                <a href="/register/" class="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
+                    <i data-lucide="user-plus" class="w-5 h-5 mr-2"></i>
+                    Зарегистрироваться
+                </a>
+            {% endif %}
+            <a href="/tutors/" class="inline-flex items-center justify-center px-8 py-4 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-blue-600 transition-colors">
+                <i data-lucide="search" class="w-5 h-5 mr-2"></i>
+                Найти репетитора
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-16 bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Отзывы наших студентов
+            </h2>
+            <p class="text-lg text-gray-600 dark:text-gray-400">
+                Что говорят о нас те, кто уже достиг успеха
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center mb-4">
+                    <div class="flex text-yellow-400">
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                    </div>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                    "Отличная платформа! ИИ-подбор действительно работает - нашел идеального репетитора по математике. Занимаюсь уже 3 месяца, результаты потрясающие!"
+                </p>
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium mr-3">
+                        А
+                    </div>
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white">Анна, 16 лет</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Ученица 10 класса</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center mb-4">
+                    <div class="flex text-yellow-400">
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                    </div>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                    "Удобно, что можно заниматься онлайн. Репетитор по английскому очень профессиональный, занятия проходят интересно и продуктивно."
+                </p>
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-medium mr-3">
+                        М
+                    </div>
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white">Михаил, 25 лет</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Студент университета</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center mb-4">
+                    <div class="flex text-yellow-400">
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                    </div>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                    "Благодаря платформе сдал ЕГЭ по физике на 95 баллов! Репетитор объяснял сложные темы простым языком. Очень доволен результатом."
+                </p>
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-medium mr-3">
+                        Д
+                    </div>
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white">Дмитрий, 18 лет</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Выпускник школы</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Add some interactive animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate stats on scroll
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -100px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-bounce-in');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe stats elements
+        document.querySelectorAll('.grid-cols-2.md\\:grid-cols-4 > div').forEach(el => {
+            observer.observe(el);
+        });
+    });
+</script>
+{% endblock %}

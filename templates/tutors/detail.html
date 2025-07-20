@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tutor.user.get_full_name|default:tutor.user.username }} - Tutors Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-8">
+        <a href="/" class="hover:text-blue-600 dark:hover:text-blue-400">Главная</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <a href="/tutors/" class="hover:text-blue-600 dark:hover:text-blue-400">Репетиторы</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <span class="text-gray-900 dark:text-white">{{ tutor.user.get_full_name|default:tutor.user.username }}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Profile Header -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="relative h-64 bg-gradient-to-br from-blue-500 to-purple-600">
+                    <div class="absolute inset-0 bg-black/20"></div>
+                    <div class="absolute bottom-6 left-6 right-6">
+                        <div class="flex items-end space-x-6">
+                            <div class="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-white/30">
+                                {{ tutor.user.first_name.0|default:tutor.user.username.0|upper }}
+                            </div>
+                            <div class="flex-1 text-white">
+                                <h1 class="text-3xl font-bold mb-2">{{ tutor.user.get_full_name|default:tutor.user.username }}</h1>
+                                <p class="text-blue-100 text-lg">{{ tutor.specialization|default:"Репетитор" }}</p>
+                            </div>
+                            <div class="text-right text-white">
+                                <div class="text-3xl font-bold">{{ tutor.hourly_rate|default:"1500" }}₽</div>
+                                <div class="text-blue-100">за час</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Online Status -->
+                    {% if tutor.is_online %}
+                    <div class="absolute top-6 right-6">
+                        <div class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
+                            <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                            <span>Онлайн</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="p-6">
+                    <!-- Stats -->
+                    <div class="grid grid-cols-3 gap-6 mb-6">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ tutor.rating|default:"4.8" }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Рейтинг</div>
+                            <div class="flex justify-center mt-1">
+                                {% for i in "12345" %}
+                                <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-current"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ tutor.experience_years|default:"5" }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Лет опыта</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ tutor.students_count|default:"50" }}+</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Учеников</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Format Badges -->
+                    <div class="flex items-center space-x-3 mb-6">
+                        {% if tutor.online_lessons %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                            <i data-lucide="video" class="w-4 h-4 mr-2"></i>
+                            Онлайн занятия
+                        </span>
+                        {% endif %}
+                        {% if tutor.offline_lessons %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                            <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>
+                            Очные занятия
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Bio -->
+                    <div class="prose dark:prose-invert max-w-none">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">О репетиторе</h3>
+                        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+                            {{ tutor.bio|default:"Опытный преподаватель с индивидуальным подходом к каждому ученику. Специализируюсь на подготовке к экзаменам, повышении успеваемости и развитии интереса к предмету. Использую современные методики обучения и адаптирую программу под потребности каждого ученика." }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subjects & Education -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Subjects -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i data-lucide="book-open" class="w-5 h-5 mr-2 text-blue-600"></i>
+                        Предметы
+                    </h3>
+                    <div class="space-y-3">
+                        {% for subject in tutor.subjects.all %}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <span class="font-medium text-gray-900 dark:text-white">{{ subject.name }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ subject.level|default:"Любой уровень" }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-gray-500 dark:text-gray-400">Предметы не указаны</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Education -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i data-lucide="graduation-cap" class="w-5 h-5 mr-2 text-green-600"></i>
+                        Образование
+                    </h3>
+                    <div class="space-y-4">
+                        {% if tutor.education %}
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white">{{ tutor.education.institution|default:"Университет" }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">{{ tutor.education.degree|default:"Высшее образование" }}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-500">{{ tutor.education.year|default:"2020" }}</div>
+                        </div>
+                        {% else %}
+                        <p class="text-gray-500 dark:text-gray-400">Информация об образовании не указана</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <i data-lucide="calendar" class="w-5 h-5 mr-2 text-purple-600"></i>
+                    Расписание
+                </h3>
+                <div class="grid grid-cols-7 gap-2">
+                    {% for day in "ПнВтСрЧтПтСбВс" %}
+                    <div class="text-center">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ day }}</div>
+                        <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto">
+                            <i data-lucide="check" class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                    <p>Доступное время: 9:00 - 21:00</p>
+                    <p>Продолжительность занятия: 60-90 минут</p>
+                </div>
+            </div>
+
+            <!-- Reviews -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                        <i data-lucide="star" class="w-5 h-5 mr-2 text-yellow-500"></i>
+                        Отзывы ({{ tutor.reviews.count|default:"12" }})
+                    </h3>
+                    <button 
+                        onclick="showReviewModal()"
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                        Оставить отзыв
+                    </button>
+                </div>
+                
+                <div class="space-y-6">
+                    {% for review in tutor.reviews.all|slice:":3" %}
+                    <div class="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+                                    {{ review.student.user.first_name.0|default:review.student.user.username.0|upper }}
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900 dark:text-white">{{ review.student.user.get_full_name|default:review.student.user.username }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ review.created_at|date:"d.m.Y" }}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                {% for i in "12345" %}
+                                <i data-lucide="star" class="w-4 h-4 {% if forloop.counter <= review.rating %}text-yellow-500 fill-current{% else %}text-gray-300{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400">{{ review.comment }}</p>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8">
+                        <i data-lucide="message-circle" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400">Пока нет отзывов</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if tutor.reviews.count > 3 %}
+                <div class="mt-6 text-center">
+                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+                        Показать все отзывы ({{ tutor.reviews.count }})
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Booking Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 sticky top-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Забронировать занятие</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Стоимость за час:</span>
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">{{ tutor.hourly_rate|default:"1500" }}₽</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Доступность:</span>
+                        <span class="text-green-600 dark:text-green-400 font-medium">Свободен</span>
+                    </div>
+                    
+                    <hr class="border-gray-200 dark:border-gray-700">
+                    
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Дата занятия</label>
+                        <input 
+                            type="date" 
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        >
+                        
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Время</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="">Выберите время</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="13:00">13:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                            <option value="18:00">18:00</option>
+                            <option value="19:00">19:00</option>
+                            <option value="20:00">20:00</option>
+                        </select>
+                        
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Длительность</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="60">60 минут</option>
+                            <option value="90">90 минут</option>
+                            <option value="120">120 минут</option>
+                        </select>
+                        
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Формат</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="format" value="online" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Онлайн</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="format" value="offline" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Очно</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <hr class="border-gray-200 dark:border-gray-700">
+                    
+                    <div class="flex items-center justify-between text-lg font-semibold">
+                        <span class="text-gray-900 dark:text-white">Итого:</span>
+                        <span class="text-blue-600 dark:text-blue-400">1500₽</span>
+                    </div>
+                    
+                    <button 
+                        onclick="bookLesson()"
+                        class="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
+                    >
+                        <i data-lucide="calendar-plus" class="w-5 h-5 mr-2"></i>
+                        Забронировать
+                    </button>
+                    
+                    <button 
+                        onclick="contactTutor()"
+                        class="w-full inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        <i data-lucide="message-circle" class="w-5 h-5 mr-2"></i>
+                        Написать сообщение
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <i data-lucide="contact" class="w-5 h-5 mr-2 text-green-600"></i>
+                    Контакты
+                </h3>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center text-gray-600 dark:text-gray-400">
+                        <i data-lucide="mail" class="w-4 h-4 mr-3"></i>
+                        <span>{{ tutor.user.email }}</span>
+                    </div>
+                    
+                    {% if tutor.phone %}
+                    <div class="flex items-center text-gray-600 dark:text-gray-400">
+                        <i data-lucide="phone" class="w-4 h-4 mr-3"></i>
+                        <span>{{ tutor.phone }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if tutor.location %}
+                    <div class="flex items-center text-gray-600 dark:text-gray-400">
+                        <i data-lucide="map-pin" class="w-4 h-4 mr-3"></i>
+                        <span>{{ tutor.location }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Certificates -->
+            {% if tutor.certificates.all %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <i data-lucide="award" class="w-5 h-5 mr-2 text-yellow-600"></i>
+                    Сертификаты
+                </h3>
+                
+                <div class="space-y-3">
+                    {% for certificate in tutor.certificates.all %}
+                    <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="font-medium text-gray-900 dark:text-white">{{ certificate.name }}</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">{{ certificate.issuer }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-500">{{ certificate.year }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div id="review-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full mx-4">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Оставить отзыв</h3>
+                <button onclick="closeReviewModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <form id="review-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Оценка</label>
+                    <div class="flex items-center space-x-2">
+                        {% for i in "12345" %}
+                        <button type="button" class="text-2xl text-gray-300 hover:text-yellow-500 focus:outline-none" data-rating="{{ forloop.counter }}">
+                            ★
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Комментарий</label>
+                    <textarea 
+                        rows="4" 
+                        placeholder="Поделитесь своими впечатлениями..."
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    ></textarea>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <button 
+                        type="submit"
+                        class="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Отправить
+                    </button>
+                    <button 
+                        type="button"
+                        onclick="closeReviewModal()"
+                        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Review modal functions
+    function showReviewModal() {
+        document.getElementById('review-modal').classList.remove('hidden');
+    }
+    
+    function closeReviewModal() {
+        document.getElementById('review-modal').classList.add('hidden');
+        document.getElementById('review-form').reset();
+    }
+    
+    // Rating functionality
+    document.querySelectorAll('[data-rating]').forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.dataset.rating;
+            document.querySelectorAll('[data-rating]').forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.add('text-yellow-500');
+                    s.classList.remove('text-gray-300');
+                } else {
+                    s.classList.remove('text-yellow-500');
+                    s.classList.add('text-gray-300');
+                }
+            });
+        });
+    });
+    
+    // Handle review form submission
+    document.getElementById('review-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const rating = document.querySelectorAll('[data-rating].text-yellow-500').length;
+        const comment = this.querySelector('textarea').value;
+        
+        if (rating === 0) {
+            showNotification('Пожалуйста, поставьте оценку', 'warning');
+            return;
+        }
+        
+        // Here you would send the review
+        showNotification('Отзыв отправлен!', 'success');
+        closeReviewModal();
+    });
+    
+    // Booking function
+    function bookLesson() {
+        // Here you would handle booking
+        showNotification('Занятие забронировано!', 'success');
+    }
+    
+    // Contact function
+    function contactTutor() {
+        // Here you would open contact form
+        showNotification('Форма связи открыта', 'info');
+    }
+</script>
+{% endblock %}
