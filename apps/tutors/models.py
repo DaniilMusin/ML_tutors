@@ -49,11 +49,38 @@ class TutorProfile(models.Model):
         return f"{self.user.username} - {self.hourly_rate}/час"
 
     def add_rating(self, rating):
-        """Add new rating and update average."""
-        total_rating = self.rating * self.rating_count + rating
-        self.rating_count += 1
-        self.rating = total_rating / self.rating_count
-        self.save()
+        """
+        Add new rating and update average.
+
+        Args:
+            rating: Integer rating from 1 to 5
+
+        Raises:
+            ValueError: If rating is not in valid range
+        """
+        from decimal import Decimal
+        from django.db import transaction
+
+        # Validate rating range
+        if not isinstance(rating, (int, float, Decimal)):
+            raise ValueError("Rating must be a number")
+
+        rating = int(rating)
+        if rating < 1 or rating > 5:
+            raise ValueError("Rating must be between 1 and 5")
+
+        # Use atomic transaction to prevent race conditions
+        with transaction.atomic():
+            # Lock the row for update
+            tutor = TutorProfile.objects.select_for_update().get(pk=self.pk)
+
+            # Calculate new rating using Decimal for precision
+            current_total = Decimal(str(tutor.rating)) * tutor.rating_count
+            new_total = current_total + Decimal(str(rating))
+            tutor.rating_count += 1
+            tutor.rating = new_total / tutor.rating_count
+
+            tutor.save(update_fields=['rating', 'rating_count'])
 
     @property
     def subjects_display(self):

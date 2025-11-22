@@ -34,17 +34,62 @@ class OrderSerializer(serializers.ModelSerializer):
     subject_id = serializers.IntegerField(write_only=True)
     applications_count = serializers.ReadOnlyField()
     budget_display = serializers.ReadOnlyField()
-    
+
     class Meta:
         model = Order
         fields = [
-            'id', 'student', 'subject', 'subject_id', 'title', 'description', 
+            'id', 'student', 'subject', 'subject_id', 'title', 'description',
             'goal_text', 'budget_min', 'budget_max', 'budget_display',
             'schedule_json', 'timezone', 'format_online', 'format_offline',
-            'city', 'region', 'status', 'created_at', 'updated_at', 
+            'city', 'region', 'status', 'created_at', 'updated_at',
             'expires_at', 'applications_count'
         ]
         read_only_fields = ['id', 'student', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        """Validate order data."""
+        budget_min = attrs.get('budget_min', 0)
+        budget_max = attrs.get('budget_max', 0)
+
+        # Validate budget values are positive
+        if budget_min < 0:
+            raise serializers.ValidationError({
+                'budget_min': 'Минимальный бюджет не может быть отрицательным'
+            })
+
+        if budget_max < 0:
+            raise serializers.ValidationError({
+                'budget_max': 'Максимальный бюджет не может быть отрицательным'
+            })
+
+        # Validate budget_max >= budget_min
+        if budget_max < budget_min:
+            raise serializers.ValidationError({
+                'budget_max': 'Максимальный бюджет должен быть больше или равен минимальному'
+            })
+
+        # Validate at least one budget is set
+        if budget_max == 0 and budget_min == 0:
+            raise serializers.ValidationError({
+                'budget_max': 'Укажите бюджет для заказа'
+            })
+
+        # Validate format is selected
+        format_online = attrs.get('format_online', False)
+        format_offline = attrs.get('format_offline', False)
+        if not format_online and not format_offline:
+            raise serializers.ValidationError({
+                'format_online': 'Выберите хотя бы один формат занятий (онлайн или оффлайн)'
+            })
+
+        # Validate offline location
+        if format_offline:
+            if not attrs.get('city'):
+                raise serializers.ValidationError({
+                    'city': 'Укажите город для оффлайн занятий'
+                })
+
+        return attrs
 
     def create(self, validated_data):
         validated_data['student'] = self.context['request'].user
@@ -66,15 +111,27 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        # Get or create tutor profile for the user
-        tutor_profile, created = TutorProfile.objects.get_or_create(
-            user=user,
-            defaults={
-                'bio': '',
-                'experience_years': 0,
-                'hourly_rate': 0
-            }
-        )
+
+        # Validate user is a tutor
+        if user.role != 'tutor':
+            raise serializers.ValidationError(
+                "Только репетиторы могут откликаться на заказы"
+            )
+
+        # Get tutor profile (must exist, don't create automatically)
+        try:
+            tutor_profile = TutorProfile.objects.get(user=user)
+        except TutorProfile.DoesNotExist:
+            raise serializers.ValidationError(
+                "Профиль репетитора не найден. Пожалуйста, создайте профиль сначала."
+            )
+
+        # Validate tutor profile is complete
+        if not tutor_profile.bio or tutor_profile.hourly_rate <= 0:
+            raise serializers.ValidationError(
+                "Заполните профиль репетитора перед откликом на заказы"
+            )
+
         validated_data['tutor'] = tutor_profile
         return super().create(validated_data)
 

@@ -41,26 +41,34 @@ if not DEBUG:
     # Force HTTPS
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
+
     # Secure cookies
     SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SECURE = True
-    
+    CSRF_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_SAMESITE = 'Lax'
+
     # HSTS
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    
+
     # Content type sniffing protection
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    
+
     # XSS protection
     SECURE_BROWSER_XSS_FILTER = True
+else:
+    # Development security settings
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
 
 # Application definition
 
 INSTALLED_APPS = [
-    # 'daphne',  # временно отключено
+    'daphne',  # Must be first for ASGI
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -68,30 +76,28 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    # 'rest_framework_simplejwt',  # временно отключено
-    # 'corsheaders',  # временно отключено
-    # 'django_prometheus',  # временно отключено
-    # 'channels',  # временно отключено
+    'rest_framework_simplejwt',
+    'corsheaders',
+    'channels',
     # Local apps
     'apps.users',
     'apps.orders',
     'apps.tutors',
     'apps.ml',
     'apps.payments',
+    'apps.frontend',
 ]
 
 MIDDLEWARE = [
-    # 'django_prometheus.middleware.PrometheusBeforeMiddleware',  # временно отключено
     'django.middleware.security.SecurityMiddleware',
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # временно отключено
-    # 'corsheaders.middleware.CorsMiddleware',  # временно отключено
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'django_prometheus.middleware.PrometheusAfterMiddleware',  # временно отключено
 ]
 
 ROOT_URLCONF = 'tutors_platform.urls'
@@ -113,14 +119,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'tutors_platform.wsgi.application'
-# ASGI_APPLICATION = 'tutors_platform.asgi.application'  # временно отключено
+ASGI_APPLICATION = 'tutors_platform.asgi.application'
 
 # Database
+# Use DATABASE_URL from environment if available, otherwise SQLite for development
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 # Password validation
@@ -173,22 +181,22 @@ REST_FRAMEWORK = {
 }
 
 # JWT Settings
-# from datetime import timedelta
-# SIMPLE_JWT = {
-#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-#     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-#     'ROTATE_REFRESH_TOKENS': True,
-# }
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+}
 
-# Channels
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             'hosts': [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
-#         },
-#     },
-# }
+# Channels configuration for WebSocket support
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
+        },
+    },
+}
 
 # Celery Configuration
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')

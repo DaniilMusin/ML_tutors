@@ -102,34 +102,77 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def choose(self, request, pk=None):
         """Выбрать отклик (только автор заказа)"""
+        from decimal import Decimal
+        from django.db import transaction
+
         application = self.get_object()
         order = application.order
-        
+
         if order.student != request.user:
             return Response(
-                {'error': 'Только автор заказа может выбирать отклики'}, 
+                {'error': 'Только автор заказа может выбирать отклики'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
-        # Снимаем выбор с других откликов
-        Application.objects.filter(order=order).update(is_chosen=False)
-        
-        # Выбираем текущий отклик
-        application.is_chosen = True
-        application.save()
-        
-        # Создаем бронирование
-        booking = Booking.objects.create(
-            application=application,
-            total_amount=application.price,
-            platform_fee=application.price * 0.1,  # 10% комиссия
-            tutor_amount=application.price * 0.9,
-            status='pending'
-        )
-        
+
+        # Validate order status
+        if order.status not in ['open']:
+            return Response(
+                {'error': 'Заказ уже закрыт или в обработке'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate application price
+        if application.price <= 0:
+            return Response(
+                {'error': 'Некорректная цена отклика'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Use atomic transaction to prevent race conditions
+        with transaction.atomic():
+            # Lock order for update
+            order = Order.objects.select_for_update().get(pk=order.pk)
+
+            # Check if booking already exists
+            if Booking.objects.filter(application__order=order).exists():
+                return Response(
+                    {'error': 'Для этого заказа уже создано бронирование'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Снимаем выбор с других откликов
+            Application.objects.filter(order=order).update(is_chosen=False)
+
+            # Выбираем текущий отклик
+            application.is_chosen = True
+            application.save(update_fields=['is_chosen'])
+
+            # Constants for commission calculation
+            PLATFORM_COMMISSION_RATE = Decimal('0.10')  # 10%
+
+            # Calculate amounts with proper decimal precision
+            platform_fee = application.price * PLATFORM_COMMISSION_RATE
+            tutor_amount = application.price - platform_fee
+
+            # Создаем бронирование
+            booking = Booking.objects.create(
+                application=application,
+                total_amount=application.price,
+                platform_fee=platform_fee,
+                tutor_amount=tutor_amount,
+                status='pending'
+            )
+
+            # Update order status
+            order.status = 'in_progress'
+            order.save(update_fields=['status'])
+
         return Response({
             'status': 'Отклик выбран',
-            'booking_id': booking.id
+            'booking_id': booking.id,
+            'total_amount': str(booking.total_amount),
+            'platform_fee': str(booking.platform_fee),
+            'tutor_amount': str(booking.tutor_amount)
         })
 
 

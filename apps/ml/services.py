@@ -146,27 +146,37 @@ class AIMatchingService:
     
     def _get_candidate_tutors(self, order: Order) -> List[TutorProfile]:
         """Get candidate tutors for an order."""
+        # Validate order has subject
+        if not order.subject:
+            logger.error(f"Order {order.id} has no subject assigned")
+            return []
+
         # Basic filtering
         candidates = TutorProfile.objects.filter(
             is_verified=True,
             user__is_active=True,
-            subjects__in=[order.subject]
+            subjects=order.subject
         ).distinct()
-        
+
         # Filter by budget
         if order.budget_max > 0:
+            BUDGET_TOLERANCE = 1.1  # 10% tolerance
             candidates = candidates.filter(
-                hourly_rate__lte=order.budget_max * 1.1  # 10% tolerance
+                hourly_rate__lte=order.budget_max * BUDGET_TOLERANCE
             )
-        
+
         # Filter by location (if offline required)
-        if order.format_offline and order.city:
-            candidates = candidates.filter(
-                Q(city__icontains=order.city) |
-                Q(region__icontains=order.region)
-            )
-        
-        return list(candidates[:200])  # Limit to 200 candidates
+        if order.format_offline:
+            if order.city:
+                location_filter = Q(city__icontains=order.city)
+                if order.region:
+                    location_filter |= Q(region__icontains=order.region)
+                candidates = candidates.filter(location_filter)
+            else:
+                logger.warning(f"Order {order.id} requires offline but no city specified")
+
+        MAX_CANDIDATES = 200
+        return list(candidates[:MAX_CANDIDATES])
     
     def _generate_features(self, order: Order, candidates: List[TutorProfile]) -> np.ndarray:
         """Generate features for ranking."""
@@ -316,7 +326,7 @@ class AIMatchingService:
             scores = self.model.predict(features)
             return scores.tolist()
         except Exception as e:
-            print(f"Error ranking with LightGBM: {e}")
+            logger.error(f"Error ranking with LightGBM: {e}")
             return [0.5] * len(features)
     
     def _fallback_ranking(self, order: Order, candidates: List[TutorProfile]) -> List[tuple]:
@@ -430,9 +440,9 @@ class AIMatchingService:
                     })
             
             return reranked[:limit]
-            
+
         except Exception as e:
-            print(f"Error in LLM reranking: {e}")
+            logger.error(f"Error in LLM reranking: {e}")
             return None
     
     def _get_match_reasons(self, order: Order, tutor: TutorProfile) -> List[str]:
