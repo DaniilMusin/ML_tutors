@@ -17,14 +17,22 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Order.objects.select_related('student', 'subject').all()
-        
+        # Optimize with select_related for foreign keys
+        queryset = Order.objects.select_related(
+            'student',
+            'subject'
+        ).prefetch_related(
+            'applications',
+            'applications__tutor',
+            'applications__tutor__user'
+        ).all()
+
         # Фильтрация по параметрам
         status_filter = self.request.query_params.get('status', None)
         subject_id = self.request.query_params.get('subject', None)
         city = self.request.query_params.get('city', None)
         format_type = self.request.query_params.get('format', None)
-        
+
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         if subject_id:
@@ -35,7 +43,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(format_online=True)
         elif format_type == 'offline':
             queryset = queryset.filter(format_offline=True)
-            
+
         return queryset.order_by('-created_at')
 
     @action(detail=False, methods=['get'])

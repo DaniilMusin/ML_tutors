@@ -17,40 +17,54 @@ class OrderConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
         """
-        Connect to order channel.
+        Connect to order channel with proper authentication and error handling.
         """
-        self.order_id = self.scope['url_route']['kwargs']['order_id']
-        self.order_group_name = f'order_{self.order_id}'
-        
-        # Check if user has access to this order
-        user = self.scope['user']
-        if not user.is_authenticated:
-            await self.close()
-            return
-        
-        # Verify user has access to this order (is student or applied tutor)
-        has_access = await self.user_has_order_access(user, self.order_id)
-        if not has_access:
-            await self.close()
-            return
-        
-        # Join order group
-        await self.channel_layer.group_add(
-            self.order_group_name,
-            self.channel_name
-        )
-        
-        await self.accept()
-        
-        # Send initial order status
-        order_data = await self.get_order_data(self.order_id)
-        await self.send(text_data=json.dumps({
-            'type': 'order_status',
-            'message': 'Connected to order updates',
-            'order': order_data
-        }))
-        
-        logger.info(f"User {user.id} connected to order {self.order_id}")
+        try:
+            self.order_id = self.scope['url_route']['kwargs']['order_id']
+            self.order_group_name = f'order_{self.order_id}'
+
+            # Check if user is authenticated
+            user = self.scope['user']
+            if not user.is_authenticated:
+                logger.warning(f"Unauthenticated user attempted to connect to order {self.order_id}")
+                await self.close(code=4001)  # Custom close code for auth failure
+                return
+
+            # Validate order exists
+            order_exists = await self.order_exists(self.order_id)
+            if not order_exists:
+                logger.warning(f"User {user.id} attempted to connect to non-existent order {self.order_id}")
+                await self.close(code=4004)  # Custom close code for not found
+                return
+
+            # Verify user has access to this order (is student or applied tutor)
+            has_access = await self.user_has_order_access(user, self.order_id)
+            if not has_access:
+                logger.warning(f"User {user.id} denied access to order {self.order_id}")
+                await self.close(code=4003)  # Custom close code for forbidden
+                return
+
+            # Join order group
+            await self.channel_layer.group_add(
+                self.order_group_name,
+                self.channel_name
+            )
+
+            await self.accept()
+
+            # Send initial order status
+            order_data = await self.get_order_data(self.order_id)
+            await self.send(text_data=json.dumps({
+                'type': 'order_status',
+                'message': 'Connected to order updates',
+                'order': order_data
+            }))
+
+            logger.info(f"User {user.id} successfully connected to order {self.order_id}")
+
+        except Exception as e:
+            logger.error(f"Error in WebSocket connect: {e}", exc_info=True)
+            await self.close(code=4500)  # Custom close code for internal error
 
     async def disconnect(self, close_code):
         """
@@ -128,17 +142,24 @@ class OrderConsumer(AsyncWebsocketConsumer):
         }))
 
     @database_sync_to_async
+    def order_exists(self, order_id):
+        """
+        Check if order exists.
+        """
+        return Order.objects.filter(id=order_id).exists()
+
+    @database_sync_to_async
     def user_has_order_access(self, user, order_id):
         """
         Check if user has access to this order.
         """
         try:
             order = Order.objects.get(id=order_id)
-            
+
             # Student who created the order
             if order.student == user:
                 return True
-            
+
             # Tutor who applied to the order
             if hasattr(user, 'tutor_profile'):
                 if Application.objects.filter(order=order, tutor=user.tutor_profile).exists():

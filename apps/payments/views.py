@@ -163,49 +163,65 @@ def stripe_webhook(request):
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
-    
+
+    # Validate endpoint secret is configured
+    if not endpoint_secret:
+        logger.error("STRIPE_WEBHOOK_SECRET not configured")
+        return HttpResponseServerError("Webhook secret not configured")
+
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
         )
-    except ValueError:
-        logger.error("Invalid payload in Stripe webhook")
+    except ValueError as e:
+        logger.error(f"Invalid payload in Stripe webhook: {e}")
         return HttpResponseBadRequest("Invalid payload")
-    except stripe.error.SignatureVerificationError:
-        logger.error("Invalid signature in Stripe webhook")
+    except stripe.error.SignatureVerificationError as e:
+        logger.error(f"Invalid signature in Stripe webhook: {e}")
         return HttpResponseBadRequest("Invalid signature")
-    
+
     event_id = event['id']
     event_type = event['type']
-    
+
     # Check for idempotency - if we've already processed this event, return success
-    with transaction.atomic():
-        webhook_event, created = StripeWebhookEvent.objects.get_or_create(
-            stripe_event_id=event_id,
-            defaults={'event_type': event_type}
-        )
-        
-        if not created:
-            logger.info(f"Webhook event {event_id} already processed, skipping")
-            return HttpResponse(status=200)
-    
-    # Handle the event
+    webhook_event, created = StripeWebhookEvent.objects.get_or_create(
+        stripe_event_id=event_id,
+        defaults={'event_type': event_type}
+    )
+
+    if not created:
+        logger.info(f"Webhook event {event_id} already processed, skipping")
+        return HttpResponse(status=200)
+
+    # Handle the event inside a transaction
     try:
-        if event_type == 'checkout.session.completed':
-            _handle_checkout_completed(event['data']['object'])
-        elif event_type == 'invoice.payment_succeeded':
-            _handle_subscription_payment(event['data']['object'])
-        elif event_type == 'customer.subscription.deleted':
-            _handle_subscription_cancelled(event['data']['object'])
-        else:
-            logger.info(f"Unhandled Stripe event type: {event_type}")
-            
+        with transaction.atomic():
+            if event_type == 'checkout.session.completed':
+                _handle_checkout_completed(event['data']['object'])
+            elif event_type == 'invoice.payment_succeeded':
+                _handle_subscription_payment(event['data']['object'])
+            elif event_type == 'customer.subscription.deleted':
+                _handle_subscription_cancelled(event['data']['object'])
+            else:
+                logger.info(f"Unhandled Stripe event type: {event_type}")
+
+    except TutorProfile.DoesNotExist as e:
+        logger.error(f"TutorProfile not found in webhook {event_id}: {str(e)}")
+        # Don't retry - data error, not transient
+        return HttpResponse(status=200)
+
+    except Booking.DoesNotExist as e:
+        logger.error(f"Booking not found in webhook {event_id}: {str(e)}")
+        # Don't retry - data error, not transient
+        return HttpResponse(status=200)
+
     except Exception as e:
-        logger.error(f"Error handling Stripe webhook {event_id}: {str(e)}")
-        # Delete the webhook event record so it can be retried
+        logger.error(f"Error handling Stripe webhook {event_id}: {str(e)}", exc_info=True)
+        # Delete the webhook event record so Stripe can retry
         StripeWebhookEvent.objects.filter(stripe_event_id=event_id).delete()
-        return HttpResponseBadRequest("Webhook handling failed")
-    
+        # Return 500 to signal Stripe to retry
+        return HttpResponseServerError("Webhook handling failed, will retry")
+
     return HttpResponse(status=200)
 
 
@@ -244,19 +260,29 @@ def _activate_premium_subscription(session, metadata):
 
 def _confirm_booking_payment(session, metadata):
     """Confirm booking payment."""
-    try:
-        booking_id = metadata.get('booking_id')
-        booking = Booking.objects.get(id=booking_id)
-        
-        # Update booking status and payment info
-        booking.status = 'confirmed'
-        booking.stripe_payment_intent_id = session.get('payment_intent')
-        booking.save()
-        
-        logger.info(f"Booking {booking.id} payment confirmed")
-        
-    except Booking.DoesNotExist:
-        logger.error(f"Booking not found: {metadata.get('booking_id')}")
+    booking_id = metadata.get('booking_id')
+    if not booking_id:
+        logger.error("No booking_id in session metadata")
+        raise ValueError("Missing booking_id in metadata")
+
+    booking = Booking.objects.get(id=booking_id)
+
+    # Validate booking can be confirmed
+    if booking.status == 'confirmed':
+        logger.warning(f"Booking {booking.id} already confirmed, skipping")
+        return
+
+    if booking.status not in ['pending', 'awaiting_payment']:
+        logger.error(f"Cannot confirm booking {booking.id} with status {booking.status}")
+        raise ValueError(f"Invalid booking status: {booking.status}")
+
+    # Update booking status and payment info
+    booking.status = 'confirmed'
+    booking.stripe_payment_intent_id = session.get('payment_intent')
+    booking.stripe_session_id = session.get('id')
+    booking.save(update_fields=['status', 'stripe_payment_intent_id', 'stripe_session_id'])
+
+    logger.info(f"Booking {booking.id} payment confirmed")
 
 
 def _handle_subscription_payment(invoice):

@@ -11,40 +11,71 @@ from apps.ml.services import AIMatchingService
 logger = logging.getLogger(__name__)
 
 
-@shared_task(bind=True, max_retries=3)
+@shared_task(bind=True, max_retries=3, autoretry_for=(Exception,), retry_backoff=True)
 def process_order_matching(self, order_id: int):
     """
-    Process AI matching for a specific order.
-    
+    Process AI matching for a specific order with idempotency.
+
     Args:
         order_id: ID of the order to process
+
+    Returns:
+        dict: Processing result with status and match count
     """
     try:
+        # Use atomic transaction with select_for_update for idempotency
         with transaction.atomic():
-            order = Order.objects.select_for_update().get(id=order_id)
-            
-            # Skip if already processed
+            # Lock the order row to prevent concurrent processing
+            order = Order.objects.select_for_update(nowait=False).get(id=order_id)
+
+            # Idempotency check - skip if already processed
             if order.ai_matches_processed:
-                logger.info(f"Order {order_id} already processed, skipping")
-                return
-            
+                logger.info(f"Order {order_id} already processed (idempotency check), skipping")
+                return {
+                    'status': 'skipped',
+                    'reason': 'already_processed',
+                    'order_id': order_id
+                }
+
+            # Validate order is in valid state for matching
+            if order.status not in ['open', 'pending']:
+                logger.warning(f"Order {order_id} has status {order.status}, skipping AI matching")
+                return {
+                    'status': 'skipped',
+                    'reason': f'invalid_status_{order.status}',
+                    'order_id': order_id
+                }
+
             # Get AI matches
             matching_service = AIMatchingService()
             matches = matching_service.get_ai_matches(order, limit=5)
-            
-            # Update order with matches
+
+            # Update order with matches atomically
             order.ai_matches = matches
             order.ai_matches_processed = True
             order.save(update_fields=['ai_matches', 'ai_matches_processed'])
-            
-            logger.info(f"Successfully processed AI matches for order {order_id}")
-            
+
+            logger.info(f"Successfully processed AI matches for order {order_id}: {len(matches)} matches found")
+
+            return {
+                'status': 'success',
+                'order_id': order_id,
+                'match_count': len(matches)
+            }
+
     except Order.DoesNotExist:
         logger.error(f"Order {order_id} not found")
-        raise
+        # Don't retry for missing orders
+        return {
+            'status': 'error',
+            'reason': 'order_not_found',
+            'order_id': order_id
+        }
+
     except Exception as exc:
-        logger.error(f"Error processing order {order_id}: {exc}")
-        raise self.retry(countdown=60, exc=exc)
+        logger.error(f"Error processing order {order_id}: {exc}", exc_info=True)
+        # Let Celery handle retries automatically with backoff
+        raise
 
 
 @shared_task
